@@ -64,11 +64,12 @@
 
         /* HISTORY */
         .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-        .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
-        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
+        .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 6px 0; border-bottom: 1px solid #111; position: relative; }
         .hist-set-num { width: 50px; opacity: 0.5; }
         .hist-set-data { flex-grow: 1; }
         .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
+        .delete-log { color: #ff453a; font-size: 0.8rem; cursor: pointer; padding-left: 10px; }
     </style>
 </head>
 <body>
@@ -197,21 +198,28 @@
             fullHistoryData = data.history || [];
             userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
             calculateWeightAvg();
-            checkPendingSync(); // Check for offline data on load
+            checkPendingSync(); 
         } catch(e) { console.log("Offline mode active."); }
     }
 
     async function checkPendingSync() {
         const pending = localStorage.getItem('pending_workout');
         if (pending) {
-            console.log("Found pending workout. Syncing...");
             const workoutObj = JSON.parse(pending);
             try {
                 await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(workoutObj)});
                 localStorage.removeItem('pending_workout');
-                console.log("Sync complete.");
-            } catch(e) { console.log("Sync failed, will retry next load."); }
+            } catch(e) {}
         }
+    }
+
+    async function deleteLog(rowId) {
+        if (!confirm("Delete this log permanently?")) return;
+        try {
+            await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "delete", rowId: rowId})});
+            fullHistoryData = fullHistoryData.filter(h => h.rowId !== rowId);
+            loadSpecificDay();
+        } catch(e) { alert("Delete failed. Check internet connection."); }
     }
 
     function toggleAuthMode() {
@@ -332,7 +340,6 @@
             data.push({ date: date, exercise: "CARDIO: " + card.querySelector('.c-type').value, set: "", weight: "", reps: "", duration: card.querySelector('.c-dur').value, distance: card.querySelector('.c-dist').value, heartRate: card.querySelector('.c-hr').value, calories: card.querySelector('.c-cal').value, notes: card.querySelector('.c-notes').value, bodyWeight: bw, volume: "" });
         });
 
-        // Offline Persistence
         const workoutObj = {user: USER_ID, data: data};
         localStorage.setItem('pending_workout', JSON.stringify(workoutObj));
 
@@ -381,7 +388,7 @@
     }
 
     function renderEliteGrid() {
-        const bw = parseFloat(document.getElementById('body-weight').value) || 180;
+        const bw = parseFloat(document.getElementById('body-weight').innerText) || 180;
         eliteChoices.forEach((choice, index) => {
             const select = document.getElementById(`select-${index}`);
             const options = [...new Set([...userExercises, choice])].sort();
@@ -436,9 +443,9 @@
             let setHtml = `<div class="hist-title"><span>${exName}</span></div>`;
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
-                    setHtml += `<div class="hist-set"><div class="hist-set-data">${s.duration ? s.duration+'m | ' : ''}${s.distance || 0}mi | ${s.calories || 0}cal</div>${s.notes ? '<div style="font-size:0.7rem; opacity:0.6; margin-top:2px;">'+s.notes+'</div>' : ''}</div>`;
+                    setHtml += `<div class="hist-set"><div class="hist-set-data">${s.duration ? s.duration+'m | ' : ''}${s.distance || 0}mi | ${s.calories || 0}cal</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
                 } else {
-                    setHtml += `<div class="hist-set"><div class="hist-set-num">Set ${i+1}</div><div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div></div>`;
+                    setHtml += `<div class="hist-set"><div class="hist-set-num">Set ${i+1}</div><div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
                 }
             });
             item.innerHTML = setHtml;
