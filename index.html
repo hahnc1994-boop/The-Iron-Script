@@ -26,8 +26,8 @@
         .auth-input { background: var(--input-bg); border: 1px solid #444; color: white; padding: 15px; border-radius: 8px; margin-bottom: 12px; width:100%; box-sizing: border-box; font-size: 1rem; }
         .auth-btn { background: var(--iron); color: #fff; border: 1px solid #8e8e93; padding: 18px; border-radius: 4px; font-weight: 900; width:100%; cursor: pointer; font-size: 1.1rem; text-transform: uppercase; box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2), 2px 2px 5px rgba(0,0,0,0.5); animation: bluePulse 3s infinite; }
         @keyframes bluePulse { 0% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(10, 132, 255, 0); } 100% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0); } }
-        .auth-secondary { color: var(--primary); background: none; border: none; margin-top: 25px; width: 100%; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
-        .signup-only { display: none; }
+        .auth-secondary { color: var(--primary); background: none; border: none; margin-top: 15px; width: 100%; font-size: 0.85rem; cursor: pointer; text-decoration: underline; }
+        .signup-only, .reset-only { display: none; }
         
         /* APP STYLES */
         .header { background: var(--bg); position: sticky; top: 0; z-index: 10; padding-bottom: 10px; border-bottom: 1px solid #333; }
@@ -80,11 +80,21 @@
     <div class="auth-container">
         <h1 id="main-title" class="main-title">THE IRON SCRIPT</h1>
         <p id="auth-subtitle" style="color: #8e8e93; margin-bottom: 30px; font-size: 0.8rem; letter-spacing: 2px;">STRENGTH ARCHIVE</p>
-        <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
-        <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
-        <input type="password" id="auth-confirm" class="auth-input signup-only" placeholder="Confirm Password">
-        <button id="main-auth-btn" class="auth-btn" onclick="submitAuth()">LOGIN</button>
-        <button id="toggle-auth-btn" class="auth-secondary" onclick="toggleAuthMode()">New Athlete? Create Profile</button>
+        
+        <div id="auth-inputs">
+            <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
+            <input type="password" id="auth-pass" class="auth-input login-hide" placeholder="Password">
+            <input type="password" id="auth-confirm" class="auth-input signup-only" placeholder="Confirm Password">
+            
+            <div class="reset-only">
+                <input type="text" id="reset-code" class="auth-input" placeholder="6-Digit Reset Code">
+                <input type="password" id="reset-new-pass" class="auth-input" placeholder="New Password">
+            </div>
+
+            <button id="main-auth-btn" class="auth-btn" onclick="handleAuth()">LOGIN</button>
+            <button id="toggle-auth-btn" class="auth-secondary" onclick="toggleAuthMode()">New Athlete? Create Profile</button>
+            <button id="forgot-btn" class="auth-secondary" onclick="toggleResetMode()">Forgot Password?</button>
+        </div>
         <p id="auth-msg" style="color: #ff453a; font-size: 0.8rem; margin-top: 20px;"></p>
     </div>
 </div>
@@ -130,7 +140,7 @@
         </div>
         <div class="heatmap" id="heatmap"></div>
 
-        <div class="achieve-grid">
+        <div class="achieve-grid" id="elite-grid">
             <div class="achieve-card">
                 <span id="pb-0" class="achieve-val">--</span>
                 <span id="ratio-0" class="ratio-tag">--</span>
@@ -175,13 +185,11 @@
 
 <script>
     const url = "https://script.google.com/macros/s/AKfycbwaX2g9cxOO9HAoZNuNOedCh9ZW5GqFkNwtfx9_JdVwTYZYQce3F2v1tnRwwo4ExDBM/exec"; 
-    let isSignupMode = false;
+    let authMode = "login"; 
     let USER_ID = localStorage.getItem('gym_user_email');
     let fullHistoryData = [];
     let userExercises = [];
     let eliteChoices = JSON.parse(localStorage.getItem('elite_choices')) || ["Bench Press", "Deadlift", "Incline Bench Press", "Back Squat"];
-
-    document.getElementById('date-picker').addEventListener('change', updateUI);
 
     if (USER_ID) {
         document.getElementById('auth-screen').style.display = 'none';
@@ -189,6 +197,61 @@
         init();
     }
 
+    /* AUTHENTICATION LOGIC */
+    function toggleAuthMode() {
+        authMode = (authMode === "signup") ? "login" : "signup";
+        document.getElementById('main-title').innerText = (authMode === "signup") ? "CREATE ATHLETE PROFILE" : "THE IRON SCRIPT";
+        document.getElementById('main-auth-btn').innerText = (authMode === "signup") ? "REGISTER" : "LOGIN";
+        document.getElementById('toggle-auth-btn').innerText = (authMode === "signup") ? "Already an Athlete? Login" : "New Athlete? Create Profile";
+        document.querySelectorAll('.signup-only').forEach(el => el.style.display = (authMode === "signup") ? 'block' : 'none');
+        document.querySelectorAll('.login-hide').forEach(el => el.style.display = 'block');
+        document.querySelector('.reset-only').style.display = 'none';
+    }
+
+    function toggleResetMode() {
+        authMode = "resetRequest";
+        document.getElementById('main-title').innerText = "SECURE RESET";
+        document.getElementById('main-auth-btn').innerText = "SEND EMAIL CODE";
+        document.querySelectorAll('.login-hide, .signup-only').forEach(el => el.style.display = 'none');
+        document.querySelector('.reset-only').style.display = 'none';
+        document.getElementById('auth-msg').innerText = "Verification required.";
+    }
+
+    async function handleAuth() {
+        const email = document.getElementById('auth-email').value;
+        const pass = document.getElementById('auth-pass').value;
+        const msg = document.getElementById('auth-msg');
+        msg.innerText = "PROCESSING...";
+
+        if (authMode === "login") {
+            const res = await fetch(`${url}?action=login&email=${email}&password=${pass}`);
+            const data = await res.json();
+            if (data.success) { localStorage.setItem('gym_user_email', email); location.reload(); }
+            else msg.innerText = "ACCESS DENIED";
+        } else if (authMode === "signup") {
+            await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "signup", email, password: pass})});
+            msg.innerText = "Success! Log in now."; toggleAuthMode();
+        } else if (authMode === "resetRequest") {
+            await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "requestReset", email})});
+            authMode = "resetVerify";
+            document.getElementById('main-auth-btn').innerText = "VERIFY & OVERWRITE";
+            document.querySelector('.reset-only').style.display = 'block';
+            msg.innerText = "Check your email for the code.";
+        } else if (authMode === "resetVerify") {
+            const code = document.getElementById('reset-code').value;
+            const newPassword = document.getElementById('reset-new-pass').value;
+            const res = await fetch(url, {method: "POST", body: JSON.stringify({action: "verifyReset", email, code, newPassword})});
+            const result = await res.text();
+            if (result === "Success") { msg.innerText = "Password Updated!"; authMode = "login"; toggleAuthMode(); }
+            else msg.innerText = "Invalid verification code.";
+        }
+    }
+
+    function confirmLogout() {
+        if (confirm("Log out?")) { localStorage.removeItem('gym_user_email'); location.reload(); }
+    }
+
+    /* CORE APP LOGIC */
     async function init() {
         document.getElementById('date-picker').value = new Date().toLocaleDateString('en-CA');
         updateUI();
@@ -198,19 +261,7 @@
             fullHistoryData = data.history || [];
             userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
             calculateWeightAvg();
-            checkPendingSync(); 
         } catch(e) { console.log("Offline mode active."); }
-    }
-
-    async function checkPendingSync() {
-        const pending = localStorage.getItem('pending_workout');
-        if (pending) {
-            const workoutObj = JSON.parse(pending);
-            try {
-                await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(workoutObj)});
-                localStorage.removeItem('pending_workout');
-            } catch(e) {}
-        }
     }
 
     async function deleteLog(rowId) {
@@ -219,60 +270,12 @@
             await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "delete", rowId: rowId})});
             fullHistoryData = fullHistoryData.filter(h => h.rowId !== rowId);
             loadSpecificDay();
-        } catch(e) { alert("Delete failed. Check connection."); }
-    }
-
-    function toggleAuthMode() {
-        isSignupMode = !isSignupMode;
-        document.getElementById('main-title').innerText = isSignupMode ? "CREATE ATHLETE PROFILE" : "THE IRON SCRIPT";
-        document.getElementById('main-auth-btn').innerText = isSignupMode ? "REGISTER" : "LOGIN";
-        document.getElementById('toggle-auth-btn').innerText = isSignupMode ? "Already an Athlete? Login" : "New Athlete? Create Profile";
-        document.querySelectorAll('.signup-only').forEach(el => el.style.display = isSignupMode ? 'block' : 'none');
-    }
-
-    async function submitAuth() {
-        const email = document.getElementById('auth-email').value;
-        const pass = document.getElementById('auth-pass').value;
-        const confirm = document.getElementById('auth-confirm').value;
-        const msg = document.getElementById('auth-msg');
-        
-        if (isSignupMode && pass !== confirm) { msg.innerText = "Passwords don't match"; return; }
-        msg.innerText = "PROCESSING...";
-        
-        if (isSignupMode) {
-            await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "signup", email, password: pass})});
-            msg.innerText = "Success! Log in now."; toggleAuthMode();
-        } else {
-            const res = await fetch(`${url}?action=login&email=${email}&password=${pass}`);
-            const data = await res.json();
-            if (data.success) { localStorage.setItem('gym_user_email', email); location.reload(); }
-            else { msg.innerText = "ACCESS DENIED"; }
-        }
-    }
-
-    function confirmLogout() {
-        if (confirm("Are you sure you want to log out?")) {
-            localStorage.removeItem('gym_user_email');
-            location.reload();
-        }
-    }
-
-    function handleExerciseInput(input) {
-        const list = document.getElementById('exercise-suggestions');
-        if (input.value.length >= 3) {
-            const matches = userExercises.filter(ex => ex.toLowerCase().includes(input.value.toLowerCase()));
-            list.innerHTML = matches.map(ex => `<option value="${ex}">`).join('');
-            input.setAttribute('list', 'exercise-suggestions');
-        } else {
-            input.removeAttribute('list');
-        }
+        } catch(e) { alert("Delete failed. Check internet."); }
     }
 
     function updateUI() {
         const dateStr = document.getElementById('date-picker').value;
-        if (!dateStr) return;
-        const [year, month, day] = dateStr.split('-').map(Number);
-        const d = new Date(year, month - 1, day);
+        const d = new Date(dateStr.replace(/-/g, '\/'));
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         document.getElementById('workout-label').innerText = days[d.getDay()];
     }
@@ -323,10 +326,11 @@
 
     async function saveWorkout() {
         const btn = document.getElementById('save-btn');
-        btn.innerText = "SAVING LOCALLY...";
+        btn.innerText = "SAVING...";
         const data = [];
         const date = document.getElementById('date-picker').value;
         const bw = document.getElementById('body-weight').value;
+        
         document.querySelectorAll('.card:not(.cardio)').forEach(card => {
             const name = card.querySelector('.ex-name').value;
             card.querySelectorAll('.set-row').forEach((row, i) => {
@@ -342,18 +346,12 @@
             data.push({ date: date, exercise: "CARDIO: " + card.querySelector('.c-type').value, set: "", weight: "", reps: "", duration: card.querySelector('.c-dur').value, distance: card.querySelector('.c-dist').value, heartRate: card.querySelector('.c-hr').value, calories: card.querySelector('.c-cal').value, notes: card.querySelector('.c-notes').value, bodyWeight: bw, volume: "" });
         });
 
-        const workoutObj = {user: USER_ID, data: data};
-        localStorage.setItem('pending_workout', JSON.stringify(workoutObj));
-
-        try {
-            await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(workoutObj)});
-            localStorage.removeItem('pending_workout');
-            btn.innerText = "CLOUD SYNCED!";
-        } catch(e) { btn.innerText = "OFFLINE SAVED"; }
-        
+        await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data: data})});
+        btn.innerText = "SAVED!";
         setTimeout(() => { btn.innerText = "SAVE ALL"; init(); }, 1500);
     }
 
+    /* STATS & DASHBOARD */
     function toggleAchieve() {
         closePanels();
         document.getElementById('achieve-panel').classList.add('open');
@@ -374,15 +372,10 @@
 
         const hm = document.getElementById('heatmap'); hm.innerHTML = "";
         let today = new Date();
-        let currentSunday = new Date(today);
-        currentSunday.setDate(today.getDate() - today.getDay());
-        let startDate = new Date(currentSunday);
-        startDate.setDate(currentSunday.getDate() - 28); 
+        let startDate = new Date(); startDate.setDate(today.getDate() - 34);
         for(let i=0; i<35; i++) {
-            let d = new Date(startDate);
-            d.setDate(startDate.getDate() + i);
-            let dateStr = d.toLocaleDateString('en-CA');
-            let act = [...dates].some(s => s.startsWith(dateStr));
+            let d = new Date(startDate); d.setDate(startDate.getDate() + i);
+            let ds = d.toLocaleDateString('en-CA'); let act = [...dates].some(s => s.startsWith(ds));
             hm.innerHTML += `<div class="heat-cell ${act?'heat-active':''}">${d.getDate()}</div>`;
         }
     }
@@ -401,7 +394,7 @@
                 }
             });
             document.getElementById(`pb-${index}`).innerText = max1RM > 0 ? Math.round(max1RM) : "--";
-            document.getElementById(`ratio-${index}`).innerText = max1RM > 0 ? (max1RM/bw).toFixed(2) + "x BW" : "--";
+            document.getElementById(`ratio-${index}`).innerText = max1RM > 0 ? (max1RM/bw).toFixed(2) + "x" : "--";
         });
     }
 
@@ -417,6 +410,7 @@
         else if (!w.value) w.value = Math.round(mx.value / (1 + r.value / 30));
     }
 
+    /* HISTORY VIEWING */
     function toggleHistory() { closePanels(); document.getElementById('history-panel').classList.add('open'); loadSpecificDay(); }
     
     function loadSpecificDay() {
@@ -452,6 +446,15 @@
             cont.appendChild(item);
         }
     }
+
+    function handleExerciseInput(input) {
+        if (input.value.length >= 2) {
+            const matches = userExercises.filter(ex => ex.toLowerCase().includes(input.value.toLowerCase()));
+            document.getElementById('exercise-suggestions').innerHTML = matches.map(ex => `<option value="${ex}">`).join('');
+            input.setAttribute('list', 'exercise-suggestions');
+        }
+    }
+
     function closePanels() { document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); }
 </script>
 </body>
