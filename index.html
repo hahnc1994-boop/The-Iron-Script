@@ -70,7 +70,7 @@
 
 <div id="auth-screen">
     <div class="auth-container">
-        <h1 class="main-title">THE IRON SCRIPT</h1>
+        <h1 id="main-title" class="main-title">THE IRON SCRIPT</h1>
         <p id="auth-subtitle" style="color: #8e8e93; margin-bottom: 30px; font-size: 0.8rem; letter-spacing: 2px;">STRENGTH ARCHIVE</p>
         <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
         <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
@@ -162,8 +162,9 @@
 
     function toggleAuthMode() {
         isSignupMode = !isSignupMode;
-        document.getElementById('auth-title').innerText = isSignupMode ? "CREATE ATHLETE PROFILE" : "THE IRON SCRIPT";
+        document.getElementById('main-title').innerText = isSignupMode ? "CREATE ATHLETE PROFILE" : "THE IRON SCRIPT";
         document.getElementById('main-auth-btn').innerText = isSignupMode ? "REGISTER" : "LOGIN";
+        document.getElementById('toggle-auth-btn').innerText = isSignupMode ? "Already an Athlete? Login" : "New Athlete? Create Profile";
         document.querySelectorAll('.signup-only').forEach(el => el.style.display = isSignupMode ? 'block' : 'none');
     }
 
