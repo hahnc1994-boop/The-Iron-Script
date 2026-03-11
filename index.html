@@ -373,11 +373,8 @@
         /* RELIABLE HEATMAP LOGIC */
         const hm = document.getElementById('heatmap'); 
         hm.innerHTML = "";
-        
         const today = new Date();
-        const currentDayOfWeek = today.getDay(); // 3 for Wed 3/11/26
-        
-        // Find the Sunday of 4 weeks ago to start a 35-day (5 week) grid
+        const currentDayOfWeek = today.getDay(); 
         const startDate = new Date();
         startDate.setDate(today.getDate() - (28 + currentDayOfWeek)); 
 
@@ -386,7 +383,6 @@
             d.setDate(startDate.getDate() + i);
             let ds = d.toLocaleDateString('en-CA'); 
             let act = [...dates].some(s => s.startsWith(ds));
-            // Apply a "today" highlight or just standard active
             hm.innerHTML += `<div class="heat-cell ${act ? 'heat-active' : ''}">${d.getDate()}</div>`;
         }
     }
@@ -448,7 +444,8 @@
             let setHtml = `<div class="hist-title"><span>${exName}</span></div>`;
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
-                    setHtml += `<div class="hist-set"><div class="hist-set-data">${s.duration ? s.duration+'m | ' : ''}${s.distance || 0}mi | ${s.calories || 0}cal</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
+                    // REMOVED DURATION STRING TO CLEAN UP MOBILE VIEW
+                    setHtml += `<div class="hist-set"><div class="hist-set-data">${s.distance || 0}mi | ${s.calories || 0}cal</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
                 } else {
                     setHtml += `<div class="hist-set"><div class="hist-set-num">Set ${i+1}</div><div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
                 }
