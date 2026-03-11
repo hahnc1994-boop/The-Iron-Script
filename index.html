@@ -44,14 +44,6 @@
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
         
-        /* HISTORY STYLES */
-        .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
-        .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
-        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
-        .hist-set-num { width: 50px; opacity: 0.5; }
-        .hist-set-data { flex-grow: 1; }
-        .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
-        
         /* DASHBOARD STYLES */
         .total-banner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
@@ -160,6 +152,7 @@
     let isSignupMode = false;
     let USER_ID = localStorage.getItem('gym_user_email');
     let fullHistoryData = [];
+    let userExercises = [];
 
     document.getElementById('date-picker').addEventListener('change', updateUI);
 
@@ -208,17 +201,19 @@
         const res = await fetch(`${url}?userId=${USER_ID}`);
         const data = await res.json();
         fullHistoryData = data.history || [];
+        userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
         calculateWeightAvg();
-        populateExerciseSuggestions();
     }
 
-    function populateExerciseSuggestions() {
+    function handleExerciseInput(input) {
         const list = document.getElementById('exercise-suggestions');
-        const uniqueExercises = [...new Set(fullHistoryData
-            .map(h => h.exercise)
-            .filter(e => e && !e.includes("CARDIO:")))
-        ];
-        list.innerHTML = uniqueExercises.map(ex => `<option value="${ex}">`).join('');
+        if (input.value.length >= 3) {
+            const matches = userExercises.filter(ex => ex.toLowerCase().includes(input.value.toLowerCase()));
+            list.innerHTML = matches.map(ex => `<option value="${ex}">`).join('');
+            input.setAttribute('list', 'exercise-suggestions');
+        } else {
+            input.removeAttribute('list');
+        }
     }
 
     function updateUI() {
@@ -239,7 +234,7 @@
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <input type="text" class="ex-name" list="exercise-suggestions" placeholder="Exercise Name" style="color:var(--primary); font-weight:bold;">
+            <input type="text" class="ex-name" placeholder="Exercise Name" oninput="handleExerciseInput(this)" style="color:var(--primary); font-weight:bold;">
             <div class="set-cont"></div>
             <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:10px;">+ Set</button>`;
         document.getElementById('exercise-list').appendChild(div);
@@ -248,9 +243,23 @@
 
     function addSet(btn) {
         const cont = btn.previousElementSibling;
+        const sets = cont.querySelectorAll('.set-row');
+        let lastWeight = "", lastReps = "";
+        
+        if (sets.length > 0) {
+            const lastSet = sets[sets.length - 1];
+            const inputs = lastSet.querySelectorAll('input');
+            lastWeight = inputs[0].value;
+            lastReps = inputs[1].value;
+        }
+
         const row = document.createElement('div');
         row.className = 'set-row';
-        row.innerHTML = `<div style="opacity:0.3">${cont.children.length+1}</div><input type="number" placeholder="Lbs"><input type="number" placeholder="Reps"><div onclick="this.parentElement.remove()">✕</div>`;
+        row.innerHTML = `
+            <div style="opacity:0.3">${sets.length+1}</div>
+            <input type="number" placeholder="Lbs" value="${lastWeight}">
+            <input type="number" placeholder="Reps" value="${lastReps}">
+            <div onclick="this.parentElement.remove()">✕</div>`;
         cont.appendChild(row);
     }
 
@@ -388,15 +397,12 @@
         const filtered = fullHistoryData.filter(h => h.date && h.date.startsWith(sel));
         const cont = document.getElementById('history-content');
         cont.innerHTML = "";
-
         if (filtered.length === 0) { cont.innerHTML = "No logs for this date."; return; }
-
         const grouped = filtered.reduce((acc, curr) => {
             if (!acc[curr.exercise]) acc[curr.exercise] = [];
             acc[curr.exercise].push(curr);
             return acc;
         }, {});
-
         for (const [exName, sets] of Object.entries(grouped)) {
             let max1RM = 0, prIndex = -1;
             sets.forEach((s, i) => {
@@ -405,11 +411,9 @@
                     if (epley > max1RM) { max1RM = epley; prIndex = i; }
                 }
             });
-
             const item = document.createElement('div');
             item.className = 'hist-item';
             let setHtml = `<div class="hist-title"><span>${exName}</span></div>`;
-            
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
                     setHtml += `<div class="hist-set">
