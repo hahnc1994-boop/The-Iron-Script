@@ -162,11 +162,6 @@
                 <select id="select-3" class="achieve-select" onchange="updateEliteSlot(3, this.value)"></select>
             </div>
         </div>
-
-        <div class="achieve-card" style="width:100%; display:grid; grid-template-columns:repeat(2, 1fr); gap: 5px;">
-            <div><span id="stat-days" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Days Trained</span></div>
-            <div><span id="stat-volume" class="achieve-val" style="font-size: 0.9rem; color: var(--accent);">0</span><span class="achieve-label">Total Volume</span></div>
-        </div>
     </div>
 
     <div id="history-panel" class="panel">
@@ -365,18 +360,28 @@
         });
 
         document.getElementById('stat-miles').innerText = miles.toFixed(1);
-        document.getElementById('stat-volume').innerText = Math.round(vol/1000) + "k";
-        document.getElementById('stat-days').innerText = dates.size;
         document.getElementById('cardio-count').innerText = sessions;
         document.getElementById('year-cals').innerText = Math.round(cals);
 
-        const hm = document.getElementById('heatmap'); hm.innerHTML = "";
-        let today = new Date();
-        let startDate = new Date(); startDate.setDate(today.getDate() - 34);
-        for(let i=0; i<35; i++) {
-            let d = new Date(startDate); d.setDate(startDate.getDate() + i);
-            let ds = d.toLocaleDateString('en-CA'); let act = [...dates].some(s => s.startsWith(ds));
-            hm.innerHTML += `<div class="heat-cell ${act?'heat-active':''}">${d.getDate()}</div>`;
+        /* FIXED HEATMAP LOGIC */
+        const hm = document.getElementById('heatmap'); 
+        hm.innerHTML = "";
+        
+        const today = new Date();
+        const dayOfWeek = today.getDay(); // 0 (Sun) to 6 (Sat)
+        
+        // Always start the heatmap on a Sunday to match the S M T W T F S labels
+        // We go back 4 full weeks (28 days) plus the days passed in the current week
+        const daysToShow = 35; 
+        const startDate = new Date();
+        startDate.setDate(today.getDate() - (daysToShow - 1) - dayOfWeek);
+
+        for(let i=0; i < daysToShow; i++) {
+            let d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            let ds = d.toLocaleDateString('en-CA'); 
+            let act = [...dates].some(s => s.startsWith(ds));
+            hm.innerHTML += `<div class="heat-cell ${act ? 'heat-active' : ''}">${d.getDate()}</div>`;
         }
     }
 
