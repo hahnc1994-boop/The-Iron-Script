@@ -44,7 +44,7 @@
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
         
-        /* HISTORY ENHANCEMENTS */
+        /* HISTORY STYLES */
         .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
         .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
         .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
@@ -52,6 +52,7 @@
         .hist-set-data { flex-grow: 1; }
         .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
         
+        /* DASHBOARD STYLES */
         .total-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
         .achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
@@ -244,7 +245,7 @@
                 <input type="number" class="c-hr" placeholder="Avg Heart Rate">
                 <input type="number" class="c-cal" placeholder="Calories">
             </div>
-            <textarea class="c-notes" placeholder="Notes (How did it feel?)" style="margin-top:10px; height:60px;"></textarea>`;
+            <textarea class="c-notes" placeholder="Notes" style="margin-top:10px; height:60px;"></textarea>`;
         document.getElementById('exercise-list').appendChild(div);
     }
 
@@ -255,27 +256,51 @@
         const date = document.getElementById('date-picker').value;
         const bw = document.getElementById('body-weight').value;
 
+        // Strength Logic (A-M Mapping)
         document.querySelectorAll('.card:not(.cardio)').forEach(card => {
             const name = card.querySelector('.ex-name').value;
             card.querySelectorAll('.set-row').forEach((row, i) => {
                 const ins = row.querySelectorAll('input');
-                if(ins[0].value) data.push({date, exercise: name, set: i+1, weight: ins[0].value, reps: ins[1].value, bodyWeight: bw});
+                const weight = parseFloat(ins[0].value) || 0;
+                const reps = parseFloat(ins[1].value) || 0;
+                if(weight > 0) {
+                    data.push({
+                        date: date, 
+                        exercise: name, 
+                        set: i+1, 
+                        weight: weight, 
+                        reps: reps, 
+                        duration: "", 
+                        distance: "",
+                        heartRate: "",
+                        calories: "",
+                        notes: "",
+                        bodyWeight: bw,
+                        volume: weight * reps
+                    });
+                }
             });
         });
+
+        // Cardio Logic (A-M Mapping)
         document.querySelectorAll('.cardio').forEach(card => {
             data.push({
-                date, 
-                exercise: "CARDIO: "+card.querySelector('.c-type').value, 
+                date: date, 
+                exercise: "CARDIO: " + card.querySelector('.c-type').value, 
+                set: "", 
+                weight: "", 
+                reps: "", 
                 duration: card.querySelector('.c-dur').value,
                 distance: card.querySelector('.c-dist').value, 
                 heartRate: card.querySelector('.c-hr').value,
                 calories: card.querySelector('.c-cal').value, 
                 notes: card.querySelector('.c-notes').value,
-                bodyWeight: bw
+                bodyWeight: bw,
+                volume: "" 
             });
         });
 
-        await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data})});
+        await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data: data})});
         btn.innerText = "SAVED!";
         setTimeout(() => { btn.innerText = "SAVE ALL"; init(); }, 1500);
     }
