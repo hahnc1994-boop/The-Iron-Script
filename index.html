@@ -44,11 +44,13 @@
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
         
-        /* DASHBOARD & HISTORY ENHANCEMENTS */
+        /* HISTORY ENHANCEMENTS */
         .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
         .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
-        .hist-set { font-size: 0.85rem; display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px solid #111; }
-        .star-pr { color: var(--gold); font-weight: bold; }
+        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
+        .hist-set-num { width: 50px; opacity: 0.5; }
+        .hist-set-data { flex-grow: 1; }
+        .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
         
         .total-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
@@ -235,11 +237,14 @@
         const div = document.createElement('div');
         div.className = 'card cardio';
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <input type="text" class="c-type" placeholder="Cardio (Run, Row, etc)" style="color:var(--cardio); font-weight:bold;">
+            <input type="text" class="c-type" placeholder="Cardio Type (Run, Row, etc)" style="color:var(--cardio); font-weight:bold;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-                <input type="number" class="c-dist" placeholder="Miles">
+                <input type="text" class="c-dur" placeholder="Duration (min)">
+                <input type="number" class="c-dist" placeholder="Distance (mi)">
+                <input type="number" class="c-hr" placeholder="Avg Heart Rate">
                 <input type="number" class="c-cal" placeholder="Calories">
-            </div>`;
+            </div>
+            <textarea class="c-notes" placeholder="Notes (How did it feel?)" style="margin-top:10px; height:60px;"></textarea>`;
         document.getElementById('exercise-list').appendChild(div);
     }
 
@@ -258,7 +263,16 @@
             });
         });
         document.querySelectorAll('.cardio').forEach(card => {
-            data.push({date, exercise: "CARDIO: "+card.querySelector('.c-type').value, distance: card.querySelector('.c-dist').value, calories: card.querySelector('.c-cal').value, bodyWeight: bw});
+            data.push({
+                date, 
+                exercise: "CARDIO: "+card.querySelector('.c-type').value, 
+                duration: card.querySelector('.c-dur').value,
+                distance: card.querySelector('.c-dist').value, 
+                heartRate: card.querySelector('.c-hr').value,
+                calories: card.querySelector('.c-cal').value, 
+                notes: card.querySelector('.c-notes').value,
+                bodyWeight: bw
+            });
         });
 
         await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data})});
@@ -319,7 +333,6 @@
 
     function toggleHistory() { closePanels(); document.getElementById('history-panel').classList.add('open'); loadSpecificDay(); }
     
-    // UPDATED HISTORY VIEW: Grouping, Numbering, and PR Star
     function loadSpecificDay() {
         const sel = document.getElementById('history-calendar').value || document.getElementById('date-picker').value;
         const filtered = fullHistoryData.filter(h => h.date && h.date.startsWith(sel));
@@ -335,10 +348,7 @@
         }, {});
 
         for (const [exName, sets] of Object.entries(grouped)) {
-            let max1RM = 0;
-            let prIndex = -1;
-
-            // Find PR Set
+            let max1RM = 0, prIndex = -1;
             sets.forEach((s, i) => {
                 if (s.weight && s.reps) {
                     let epley = parseFloat(s.weight) * (1 + parseFloat(s.reps) / 30);
@@ -352,11 +362,14 @@
             
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
-                    setHtml += `<div class="hist-set"><span>${s.distance || 0} mi</span><span>${s.calories || 0} cal</span></div>`;
+                    setHtml += `<div class="hist-set">
+                        <div class="hist-set-data">${s.duration ? s.duration+'m | ' : ''}${s.distance || 0}mi | ${s.calories || 0}cal</div>
+                        ${s.notes ? '<div style="font-size:0.7rem; opacity:0.6; margin-top:2px;">'+s.notes+'</div>' : ''}
+                    </div>`;
                 } else {
                     setHtml += `<div class="hist-set">
-                        <span>Set ${i+1}</span>
-                        <span>${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</span>
+                        <div class="hist-set-num">Set ${i+1}</div>
+                        <div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div>
                     </div>`;
                 }
             });
