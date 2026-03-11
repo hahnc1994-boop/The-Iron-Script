@@ -18,18 +18,22 @@
         
         /* APP STYLES */
         .header { background: var(--bg); position: sticky; top: 0; z-index: 10; padding-bottom: 10px; border-bottom: 1px solid #333; }
-        .top-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .logout-btn { background: none; border: 1px solid #ff453a; color: #ff453a; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; }
+        
+        .top-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .stat-label { font-size: 0.6rem; color: #8e8e93; text-transform: uppercase; margin-bottom: 4px; }
+        
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); position: relative; }
         .card.cardio { border-left-color: var(--cardio); }
         .set-row { display: grid; grid-template-columns: 0.5fr 1.5fr 1.5fr 0.5fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         input, textarea { background: var(--input-bg); border: none; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
+        
         .btn-add-ex { background: #1c1c1e; color: var(--text); border: 2px dashed #444; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; }
         .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; border-top: 1px solid #333; z-index: 20; }
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
         
-        /* DASHBOARD STYLES */
         .total-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
         .achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
@@ -60,12 +64,15 @@
 
 <div id="app-content" style="display: none;">
     <div class="header">
+        <div class="header-top">
+            <div id="workout-label" style="font-size: 1.2rem; color: var(--accent); font-weight: bold;"></div>
+            <button class="logout-btn" onclick="confirmLogout()">LOGOUT</button>
+        </div>
         <div class="top-stats">
             <div class="stat-box"><span class="stat-label">Date</span><input type="date" id="date-picker"></div>
             <div class="stat-box"><span class="stat-label">Weight</span><input type="number" id="body-weight" placeholder="Lbs"></div>
             <div class="stat-box"><span class="stat-label">7D Avg</span><div id="weight-avg" style="color: var(--accent); font-weight: bold; padding: 10px; background: var(--input-bg); border-radius: 8px; text-align: center;">--</div></div>
         </div>
-        <div id="workout-label" style="font-size: 0.8rem; color: var(--accent); margin-top: 10px; font-weight: bold;"></div>
     </div>
 
     <div id="exercise-list" style="margin-top: 20px;"></div>
@@ -104,7 +111,6 @@
             <div><span id="stat-days" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Days</span></div>
             <div><span id="stat-volume" class="achieve-val" style="font-size: 0.9rem; color: var(--accent);">0</span><span class="achieve-label">Volume</span></div>
         </div>
-        <button onclick="logout()" style="width:100%; margin-top:20px; background:#ff453a; color:white; border:none; padding:10px; border-radius:8px;">LOGOUT</button>
     </div>
 
     <div id="history-panel" class="panel">
@@ -127,7 +133,6 @@
     let USER_ID = localStorage.getItem('gym_user_email');
     let fullHistoryData = [];
 
-    // Setup initial date and event listener
     document.getElementById('date-picker').addEventListener('change', updateUI);
 
     if (USER_ID) {
@@ -162,7 +167,13 @@
         }
     }
 
-    function logout() { localStorage.removeItem('gym_user_email'); location.reload(); }
+    // UPDATED LOGOUT WITH CONFIRMATION
+    function confirmLogout() {
+        if (confirm("Are you sure you want to log out?")) {
+            localStorage.removeItem('gym_user_email');
+            location.reload();
+        }
+    }
 
     async function init() {
         document.getElementById('date-picker').value = new Date().toLocaleDateString('en-CA');
@@ -173,12 +184,9 @@
         calculateWeightAvg();
     }
 
-    // UPDATED: Now properly handles the day name when the date is changed
     function updateUI() {
         const dateStr = document.getElementById('date-picker').value;
         if (!dateStr) return;
-        
-        // Split and create date this way to avoid time-zone shifting
         const [year, month, day] = dateStr.split('-').map(Number);
         const d = new Date(year, month - 1, day);
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
