@@ -87,7 +87,7 @@
 
         <div class="total-banner">
             <div class="total-box"><span id="cardio-count" class="achieve-val" style="color: var(--cardio);">0</span><span class="achieve-label">Sessions</span></div>
-            <div class="total-box"><span id="year-cals" class="achieve-val" style="color: #ff453a;">0</span><span class="achieve-label">Calories</span></div>
+            <div class="total-box"><span id="year-cals" class="achieve-val" style="color: #ff453a;">0</span><span class="achieve-label">Yearly Calories</span></div>
         </div>
 
         <div class="heatmap" id="heatmap"></div>
@@ -126,6 +126,9 @@
     let isSignupMode = false;
     let USER_ID = localStorage.getItem('gym_user_email');
     let fullHistoryData = [];
+
+    // Setup initial date and event listener
+    document.getElementById('date-picker').addEventListener('change', updateUI);
 
     if (USER_ID) {
         document.getElementById('auth-screen').style.display = 'none';
@@ -170,8 +173,14 @@
         calculateWeightAvg();
     }
 
+    // UPDATED: Now properly handles the day name when the date is changed
     function updateUI() {
-        const d = new Date(document.getElementById('date-picker').value.replace(/-/g, '\/'));
+        const dateStr = document.getElementById('date-picker').value;
+        if (!dateStr) return;
+        
+        // Split and create date this way to avoid time-zone shifting
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const d = new Date(year, month - 1, day);
         const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
         document.getElementById('workout-label').innerText = days[d.getDay()];
     }
@@ -253,7 +262,11 @@
                 if(ex.includes("incline")) maxes.incline = Math.max(maxes.incline, epley);
                 if(ex.includes("squat")) maxes.squat = Math.max(maxes.squat, epley);
             }
-            if(h.exercise.includes("CARDIO")) { sessions++; cals += parseFloat(h.calories || 0); miles += parseFloat(h.distance || 0); }
+            if(h.exercise && h.exercise.includes("CARDIO")) { 
+                sessions++; 
+                cals += parseFloat(h.calories || 0); 
+                miles += parseFloat(h.distance || 0); 
+            }
         });
 
         document.getElementById('stat-miles').innerText = miles.toFixed(1);
@@ -290,7 +303,7 @@
     function loadSpecificDay() {
         const sel = document.getElementById('history-calendar').value || document.getElementById('date-picker').value;
         const filtered = fullHistoryData.filter(h => h.date && h.date.startsWith(sel));
-        document.getElementById('history-content').innerHTML = filtered.map(h => `<div style="border-bottom:1px solid #333; padding:8px 0;">${h.exercise}: ${h.weight?h.weight+'x'+h.reps : h.distance+'mi'}</div>`).join('') || "No logs";
+        document.getElementById('history-content').innerHTML = filtered.map(h => `<div style="border-bottom:1px solid #333; padding:8px 0;">${h.exercise}: ${h.weight?h.weight+'x'+h.reps : (h.distance || 0)+'mi'}</div>`).join('') || "No logs";
     }
     function closePanels() { document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); }
 </script>
