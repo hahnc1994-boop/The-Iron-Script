@@ -191,11 +191,27 @@
     async function init() {
         document.getElementById('date-picker').value = new Date().toLocaleDateString('en-CA');
         updateUI();
-        const res = await fetch(`${url}?userId=${USER_ID}`);
-        const data = await res.json();
-        fullHistoryData = data.history || [];
-        userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
-        calculateWeightAvg();
+        try {
+            const res = await fetch(`${url}?userId=${USER_ID}`);
+            const data = await res.json();
+            fullHistoryData = data.history || [];
+            userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
+            calculateWeightAvg();
+            checkPendingSync(); // Check for offline data on load
+        } catch(e) { console.log("Offline mode active."); }
+    }
+
+    async function checkPendingSync() {
+        const pending = localStorage.getItem('pending_workout');
+        if (pending) {
+            console.log("Found pending workout. Syncing...");
+            const workoutObj = JSON.parse(pending);
+            try {
+                await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(workoutObj)});
+                localStorage.removeItem('pending_workout');
+                console.log("Sync complete.");
+            } catch(e) { console.log("Sync failed, will retry next load."); }
+        }
     }
 
     function toggleAuthMode() {
@@ -297,7 +313,7 @@
 
     async function saveWorkout() {
         const btn = document.getElementById('save-btn');
-        btn.innerText = "SAVING...";
+        btn.innerText = "SAVING LOCALLY...";
         const data = [];
         const date = document.getElementById('date-picker').value;
         const bw = document.getElementById('body-weight').value;
@@ -315,8 +331,19 @@
         document.querySelectorAll('.cardio').forEach(card => {
             data.push({ date: date, exercise: "CARDIO: " + card.querySelector('.c-type').value, set: "", weight: "", reps: "", duration: card.querySelector('.c-dur').value, distance: card.querySelector('.c-dist').value, heartRate: card.querySelector('.c-hr').value, calories: card.querySelector('.c-cal').value, notes: card.querySelector('.c-notes').value, bodyWeight: bw, volume: "" });
         });
-        await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data: data})});
-        btn.innerText = "SAVED!";
+
+        // Offline Persistence
+        const workoutObj = {user: USER_ID, data: data};
+        localStorage.setItem('pending_workout', JSON.stringify(workoutObj));
+
+        try {
+            await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(workoutObj)});
+            localStorage.removeItem('pending_workout');
+            btn.innerText = "CLOUD SYNCED!";
+        } catch(e) {
+            btn.innerText = "OFFLINE SAVED";
+        }
+        
         setTimeout(() => { btn.innerText = "SAVE ALL"; init(); }, 1500);
     }
 
@@ -355,14 +382,10 @@
 
     function renderEliteGrid() {
         const bw = parseFloat(document.getElementById('body-weight').value) || 180;
-        
         eliteChoices.forEach((choice, index) => {
             const select = document.getElementById(`select-${index}`);
-            // Populate select with unique history exercises + current choice
             const options = [...new Set([...userExercises, choice])].sort();
             select.innerHTML = options.map(opt => `<option value="${opt}" ${opt === choice ? 'selected' : ''}>${opt}</option>`).join('');
-            
-            // Calculate 1RM for this specific exercise
             let max1RM = 0;
             fullHistoryData.filter(h => h.exercise === choice).forEach(h => {
                 if(h.weight && h.reps) {
@@ -370,7 +393,6 @@
                     max1RM = Math.max(max1RM, epley);
                 }
             });
-
             document.getElementById(`pb-${index}`).innerText = max1RM > 0 ? Math.round(max1RM) : "--";
             document.getElementById(`ratio-${index}`).innerText = max1RM > 0 ? (max1RM/bw).toFixed(2) + "x BW" : "--";
         });
