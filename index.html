@@ -47,13 +47,13 @@
         /* HISTORY STYLES */
         .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
         .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
-        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
+        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 10px solid #111; }
         .hist-set-num { width: 50px; opacity: 0.5; }
         .hist-set-data { flex-grow: 1; }
         .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
         
         /* DASHBOARD STYLES */
-        .total-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+        .total-banner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
         .achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
         .achieve-card { background: #2c2c2e; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #444; }
@@ -112,8 +112,9 @@
         </div>
 
         <div class="total-banner">
-            <div class="total-box"><span id="cardio-count" class="achieve-val" style="color: var(--cardio);">0</span><span class="achieve-label">Sessions</span></div>
+            <div class="total-box"><span id="cardio-count" class="achieve-val" style="color: var(--cardio);">0</span><span class="achieve-label">Cardio Sessions</span></div>
             <div class="total-box"><span id="year-cals" class="achieve-val" style="color: #ff453a;">0</span><span class="achieve-label">Yearly Calories</span></div>
+            <div class="total-box"><span id="stat-miles" class="achieve-val" style="color: var(--primary);">0</span><span class="achieve-label">Miles</span></div>
         </div>
 
         <div class="heatmap" id="heatmap"></div>
@@ -125,10 +126,9 @@
             <div class="achieve-card"><span id="pb-squat" class="achieve-val">--</span><span id="ratio-squat" class="ratio-tag">--</span><span class="achieve-label">Squat</span></div>
         </div>
 
-        <div class="achieve-card" style="width:100%; display:grid; grid-template-columns:repeat(3, 1fr); gap: 5px;">
-            <div><span id="stat-miles" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Miles</span></div>
-            <div><span id="stat-days" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Days</span></div>
-            <div><span id="stat-volume" class="achieve-val" style="font-size: 0.9rem; color: var(--accent);">0</span><span class="achieve-label">Volume</span></div>
+        <div class="achieve-card" style="width:100%; display:grid; grid-template-columns:repeat(2, 1fr); gap: 5px;">
+            <div><span id="stat-days" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Days Trained</span></div>
+            <div><span id="stat-volume" class="achieve-val" style="font-size: 0.9rem; color: var(--accent);">0</span><span class="achieve-label">Total Volume</span></div>
         </div>
     </div>
 
