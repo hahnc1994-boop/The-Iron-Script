@@ -257,7 +257,6 @@
         const date = document.getElementById('date-picker').value;
         const bw = document.getElementById('body-weight').value;
 
-        // Strength Logic (A-M Mapping)
         document.querySelectorAll('.card:not(.cardio)').forEach(card => {
             const name = card.querySelector('.ex-name').value;
             card.querySelectorAll('.set-row').forEach((row, i) => {
@@ -283,7 +282,6 @@
             });
         });
 
-        // Cardio Logic (A-M Mapping)
         document.querySelectorAll('.cardio').forEach(card => {
             data.push({
                 date: date, 
@@ -342,11 +340,22 @@
         updateMax('pb-incline', 'ratio-incline', maxes.incline);
         updateMax('pb-squat', 'ratio-squat', maxes.squat);
 
+        // Heatmap Logic: 5-week rolling calendar (Sunday-Saturday)
         const hm = document.getElementById('heatmap'); hm.innerHTML = "";
-        let start = new Date(); start.setDate(new Date().getDate() - 34);
+        let today = new Date();
+        // Move to the Sunday of the current week
+        let currentSunday = new Date(today);
+        currentSunday.setDate(today.getDate() - today.getDay());
+        
+        // Go back 4 more weeks from this Sunday (Total 5 weeks)
+        let startDate = new Date(currentSunday);
+        startDate.setDate(currentSunday.getDate() - 28); 
+
         for(let i=0; i<35; i++) {
-            let d = new Date(start); d.setDate(start.getDate() + i);
-            let act = [...dates].some(s => s.startsWith(d.toLocaleDateString('en-CA')));
+            let d = new Date(startDate);
+            d.setDate(startDate.getDate() + i);
+            let dateStr = d.toLocaleDateString('en-CA');
+            let act = [...dates].some(s => s.startsWith(dateStr));
             hm.innerHTML += `<div class="heat-cell ${act?'heat-active':''}">${d.getDate()}</div>`;
         }
     }
