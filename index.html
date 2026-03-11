@@ -219,7 +219,7 @@
             await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "delete", rowId: rowId})});
             fullHistoryData = fullHistoryData.filter(h => h.rowId !== rowId);
             loadSpecificDay();
-        } catch(e) { alert("Delete failed. Check internet connection."); }
+        } catch(e) { alert("Delete failed. Check connection."); }
     }
 
     function toggleAuthMode() {
@@ -235,8 +235,10 @@
         const pass = document.getElementById('auth-pass').value;
         const confirm = document.getElementById('auth-confirm').value;
         const msg = document.getElementById('auth-msg');
+        
         if (isSignupMode && pass !== confirm) { msg.innerText = "Passwords don't match"; return; }
         msg.innerText = "PROCESSING...";
+        
         if (isSignupMode) {
             await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "signup", email, password: pass})});
             msg.innerText = "Success! Log in now."; toggleAuthMode();
@@ -311,9 +313,9 @@
         const div = document.createElement('div');
         div.className = 'card cardio';
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <input type="text" class="c-type" placeholder="Cardio Type (Run, Row, etc)" style="color:var(--cardio); font-weight:bold;">
+            <input type="text" class="c-type" placeholder="Cardio Type" style="color:var(--cardio); font-weight:bold;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-                <input type="text" class="c-dur" placeholder="Duration (min)"><input type="number" class="c-dist" placeholder="Distance (mi)"><input type="number" class="c-hr" placeholder="Avg Heart Rate"><input type="number" class="c-cal" placeholder="Calories">
+                <input type="text" class="c-dur" placeholder="Duration"><input type="number" class="c-dist" placeholder="Distance"><input type="number" class="c-hr" placeholder="HR"><input type="number" class="c-cal" placeholder="Cals">
             </div>
             <textarea class="c-notes" placeholder="Notes" style="margin-top:10px; height:60px;"></textarea>`;
         document.getElementById('exercise-list').appendChild(div);
@@ -347,9 +349,7 @@
             await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(workoutObj)});
             localStorage.removeItem('pending_workout');
             btn.innerText = "CLOUD SYNCED!";
-        } catch(e) {
-            btn.innerText = "OFFLINE SAVED";
-        }
+        } catch(e) { btn.innerText = "OFFLINE SAVED"; }
         
         setTimeout(() => { btn.innerText = "SAVE ALL"; init(); }, 1500);
     }
@@ -388,7 +388,7 @@
     }
 
     function renderEliteGrid() {
-        const bw = parseFloat(document.getElementById('body-weight').innerText) || 180;
+        const bw = parseFloat(document.getElementById('body-weight').value) || 180;
         eliteChoices.forEach((choice, index) => {
             const select = document.getElementById(`select-${index}`);
             const options = [...new Set([...userExercises, choice])].sort();
