@@ -15,6 +15,10 @@
         .card.cardio { border-left-color: var(--cardio); }
         .set-row { display: grid; grid-template-columns: 0.5fr 1.5fr 1.5fr 0.5fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         input, textarea { background: var(--input-bg); border: none; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
+        
+        /* This makes the "Enter Exercise" look semi-transparent */
+        input::placeholder { color: rgba(255, 255, 255, 0.3); }
+
         .btn-add-ex { background: #1c1c1e; color: var(--text); border: 2px dashed #444; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; }
         .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; border-top: 1px solid #333; z-index: 20; }
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
@@ -120,7 +124,6 @@
     const url = "https://script.google.com/macros/s/AKfycbwaX2g9cxOO9HAoZNuNOedCh9ZW5GqFkNwtfx9_JdVwTYZYQce3F2v1tnRwwo4ExDBM/exec"; 
     
     // --- MULTI-USER LOGIC ---
-    // This creates a unique ID for the person using the phone so they don't see your data.
     function getUserId() {
         let id = localStorage.getItem('gym_track_user_id');
         if (!id) {
@@ -131,8 +134,7 @@
     }
     const USER_ID = getUserId();
 
-    const splitNames = ["Sunday: Vol Legs", "Monday: Vol Back", "Tuesday: Vol Chest", "Wed: Rest", "Thursday: Heavy Legs", "Friday: Heavy Back", "Saturday: Heavy Chest"];
-    const mainLifts = ["Front Squat", "Light Deadlift", "Incline Bench", "", "Back Squat", "Deadlift", "Bench Press"];
+    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
     
     let fullHistoryData = [];
     const datePicker = document.getElementById('date-picker');
@@ -141,7 +143,6 @@
     async function init() {
         updateUI();
         try {
-            // Added ?userId= to the web request so Google knows who is asking
             const res = await fetch(`${url}?userId=${USER_ID}`);
             const data = await res.json();
             fullHistoryData = data.history || [];
@@ -178,16 +179,18 @@
     function updateUI() {
         const [y, m, d] = datePicker.value.split('-').map(Number);
         const day = new Date(y, m-1, d).getDay();
-        document.getElementById('workout-label').innerText = splitNames[day];
+        // Updated to only show the Day of the Week
+        document.getElementById('workout-label').innerText = daysOfWeek[day];
         document.getElementById('exercise-list').innerHTML = "";
-        if (mainLifts[day]) addExercise(mainLifts[day]);
+        // Removed automatic exercise loading here
     }
 
     function addExercise(name = "") {
         const div = document.createElement('div');
         div.className = 'card';
+        // Updated input with placeholder "Enter Exercise"
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <input type="text" class="exercise-name" list="exercise-options" value="${name}" style="background:none; border:none; color:var(--primary); font-weight:bold; font-size:1.1rem; width:85%;">
+            <input type="text" class="exercise-name" list="exercise-options" value="${name}" placeholder="Enter Exercise" style="background:none; border:none; color:var(--primary); font-weight:bold; font-size:1.1rem; width:85%;">
             <div class="set-container"></div>
             <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:5px;">+ Set</button>
             <textarea class="ex-notes" placeholder="Notes..." rows="2" style="margin-top:10px;"></textarea>`;
@@ -256,11 +259,7 @@
             workoutData.push({date, exercise: type, duration: `${h}:${m}:${s}`, distance: card.querySelector('.c-dist').value, heartRate: card.querySelector('.c-hr').value, calories: card.querySelector('.c-cal').value, notes: card.querySelector('.c-notes').value, bodyWeight: bodyWeight});
         });
 
-        // Package both the User ID and the Workout Data together
-        const payload = {
-            user: USER_ID,
-            data: workoutData
-        };
+        const payload = { user: USER_ID, data: workoutData };
 
         await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify(payload)});
         btn.innerText = "SAVED!";
