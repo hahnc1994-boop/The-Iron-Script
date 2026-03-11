@@ -3,37 +3,73 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Gym Track Pro Elite</title>
+    <title>The Iron Script</title>
     <style>
-        :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #ffffff; --accent: #32d74b; --input-bg: #2c2c2e; --cardio: #ff9f0a; --gold: #ffd700; }
+        :root { 
+            --bg: #000000; 
+            --card: #1c1c1e; 
+            --primary: #0a84ff; /* Deep Blue */
+            --text: #ffffff; 
+            --accent: #32d74b; 
+            --input-bg: #2c2c2e; 
+            --cardio: #ff9f0a; 
+            --gold: #ffd700; 
+            --iron: linear-gradient(145deg, #8e8e93, #48484a, #2c2c2e); /* Rusted Silver effect */
+        }
+        
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 120px; }
         
-        /* AUTHENTICATION OVERLAY */
-        #auth-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 1000; display: flex; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; }
-        .auth-container { max-width: 400px; margin: 0 auto; width: 100%; }
-        .auth-input { background: var(--input-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; width:100%; box-sizing: border-box; font-size: 1rem; outline: none; }
-        .auth-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; width:100%; cursor: pointer; font-size: 1rem; }
-        .auth-secondary { color: var(--primary); background: none; border: none; margin-top: 20px; width: 100%; font-size: 0.9rem; cursor: pointer; }
+        /* THE IRON SCRIPT AUTH THEME */
+        #auth-screen { 
+            position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: radial-gradient(circle at center, #1c1c1e 0%, #000 100%); 
+            z-index: 1000; display: flex; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; 
+        }
+        .auth-container { max-width: 400px; margin: 0 auto; width: 100%; text-align: center; }
+        
+        .main-title { 
+            font-size: 2.5rem; font-weight: 900; letter-spacing: -1px; margin-bottom: 5px; 
+            text-transform: uppercase; color: #d1d1d6;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8), 0 0 1px #fff;
+        }
+
+        .auth-input { 
+            background: var(--input-bg); border: 1px solid #444; color: white; padding: 15px; 
+            border-radius: 8px; margin-bottom: 12px; width:100%; box-sizing: border-box; font-size: 1rem; 
+        }
+
+        /* Weathered Iron Button with Deep Blue Pulse */
+        .auth-btn { 
+            background: var(--iron); 
+            color: #fff; border: 1px solid #8e8e93; padding: 18px; border-radius: 4px; 
+            font-weight: 900; width:100%; cursor: pointer; font-size: 1.1rem; text-transform: uppercase;
+            box-shadow: inset 1px 1px 2px rgba(255,255,255,0.2), 2px 2px 5px rgba(0,0,0,0.5);
+            animation: bluePulse 3s infinite;
+        }
+
+        @keyframes bluePulse {
+            0% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(10, 132, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(10, 132, 255, 0); }
+        }
+
+        .auth-secondary { color: var(--primary); background: none; border: none; margin-top: 25px; width: 100%; font-size: 0.9rem; cursor: pointer; text-decoration: underline; }
         .signup-only { display: none; }
         
-        /* APP STYLES */
+        /* APP STYLES (No changes to logic/layout) */
         .header { background: var(--bg); position: sticky; top: 0; z-index: 10; padding-bottom: 10px; border-bottom: 1px solid #333; }
         .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .logout-btn { background: none; border: 1px solid #ff453a; color: #ff453a; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: bold; }
-        
         .top-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
         .stat-label { font-size: 0.6rem; color: #8e8e93; text-transform: uppercase; margin-bottom: 4px; }
-        
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); position: relative; }
         .card.cardio { border-left-color: var(--cardio); }
         .set-row { display: grid; grid-template-columns: 0.5fr 1.5fr 1.5fr 0.5fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         input, textarea { background: var(--input-bg); border: none; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
-        
         .btn-add-ex { background: #1c1c1e; color: var(--text); border: 2px dashed #444; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; }
         .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; border-top: 1px solid #333; z-index: 20; }
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
-        
         .total-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
         .achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
@@ -51,14 +87,14 @@
 
 <div id="auth-screen">
     <div class="auth-container">
-        <h1 id="auth-title" style="text-align: center;">Welcome Back</h1>
-        <p id="auth-subtitle" style="color: #8e8e93; text-align: center; margin-bottom: 30px;">Login to your fitness profile</p>
+        <h1 class="main-title">THE IRON SCRIPT</h1>
+        <p id="auth-subtitle" style="color: #8e8e93; margin-bottom: 30px; font-size: 0.8rem; letter-spacing: 2px;">STRENGTH ARCHIVE</p>
         <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
         <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
         <input type="password" id="auth-confirm" class="auth-input signup-only" placeholder="Confirm Password">
         <button id="main-auth-btn" class="auth-btn" onclick="submitAuth()">LOGIN</button>
-        <button id="toggle-auth-btn" class="auth-secondary" onclick="toggleAuthMode()">Don't have an account? <b>Create one</b></button>
-        <p id="auth-msg" style="color: #ff453a; font-size: 0.8rem; margin-top: 20px; text-align: center;"></p>
+        <button id="toggle-auth-btn" class="auth-secondary" onclick="toggleAuthMode()">New Athlete? Create Profile</button>
+        <p id="auth-msg" style="color: #ff453a; font-size: 0.8rem; margin-top: 20px;"></p>
     </div>
 </div>
 
@@ -143,8 +179,8 @@
 
     function toggleAuthMode() {
         isSignupMode = !isSignupMode;
-        document.getElementById('auth-title').innerText = isSignupMode ? "Create Account" : "Welcome Back";
-        document.getElementById('main-auth-btn').innerText = isSignupMode ? "SIGN UP" : "LOGIN";
+        document.getElementById('auth-title').innerText = isSignupMode ? "CREATE ATHLETE PROFILE" : "THE IRON SCRIPT";
+        document.getElementById('main-auth-btn').innerText = isSignupMode ? "REGISTER" : "LOGIN";
         document.querySelectorAll('.signup-only').forEach(el => el.style.display = isSignupMode ? 'block' : 'none');
     }
 
@@ -155,7 +191,7 @@
         const msg = document.getElementById('auth-msg');
         if (isSignupMode && pass !== confirm) { msg.innerText = "Passwords don't match"; return; }
         
-        msg.innerText = "Processing...";
+        msg.innerText = "PROCESSING...";
         if (isSignupMode) {
             await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "signup", email, password: pass})});
             msg.innerText = "Success! Log in now."; toggleAuthMode();
@@ -163,11 +199,10 @@
             const res = await fetch(`${url}?action=login&email=${email}&password=${pass}`);
             const data = await res.json();
             if (data.success) { localStorage.setItem('gym_user_email', email); location.reload(); }
-            else { msg.innerText = "Error logging in."; }
+            else { msg.innerText = "ACCESS DENIED"; }
         }
     }
 
-    // UPDATED LOGOUT WITH CONFIRMATION
     function confirmLogout() {
         if (confirm("Are you sure you want to log out?")) {
             localStorage.removeItem('gym_user_email');
