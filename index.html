@@ -38,7 +38,7 @@
         .card { background: var(--card); padding: 15px; border-radius: 12px; margin-bottom: 15px; border-left: 4px solid var(--primary); position: relative; }
         .card.cardio { border-left-color: var(--cardio); }
         .set-row { display: grid; grid-template-columns: 0.5fr 1.5fr 1.5fr 0.5fr; gap: 10px; margin-bottom: 10px; align-items: center; }
-        input, textarea { background: var(--input-bg); border: none; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
+        input, textarea, select { background: var(--input-bg); border: none; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
         .btn-add-ex { background: #1c1c1e; color: var(--text); border: 2px dashed #444; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; }
         .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; border-top: 1px solid #333; z-index: 20; }
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
@@ -48,9 +48,10 @@
         .total-banner { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-bottom: 20px; }
         .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
         .achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .achieve-card { background: #2c2c2e; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #444; }
+        .achieve-card { background: #2c2c2e; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #444; display: flex; flex-direction: column; justify-content: space-between; }
         .achieve-val { font-size: 1.3rem; font-weight: bold; color: var(--gold); display: block; }
         .achieve-label { font-size: 0.6rem; color: #8e8e93; text-transform: uppercase; margin-top: 4px; display: block; }
+        .achieve-select { background: transparent; color: #8e8e93; font-size: 0.6rem; text-transform: uppercase; border: none; text-align: center; width: 100%; cursor: pointer; padding: 0; }
         .ratio-tag { font-size: 0.7rem; color: var(--accent); font-weight: bold; margin-top: 2px; display: block; }
         
         /* HEATMAP */
@@ -60,6 +61,14 @@
         .heat-cell { aspect-ratio: 1; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #555; }
         .heat-active { background: var(--accent); color: black; font-weight: bold; }
         .remove-card { position: absolute; right: 10px; top: 10px; color: #ff453a; font-weight: bold; }
+
+        /* HISTORY */
+        .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
+        .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
+        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
+        .hist-set-num { width: 50px; opacity: 0.5; }
+        .hist-set-data { flex-grow: 1; }
+        .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
     </style>
 </head>
 <body>
@@ -121,10 +130,26 @@
         <div class="heatmap" id="heatmap"></div>
 
         <div class="achieve-grid">
-            <div class="achieve-card"><span id="pb-bench" class="achieve-val">--</span><span id="ratio-bench" class="ratio-tag">--</span><span class="achieve-label">Bench</span></div>
-            <div class="achieve-card"><span id="pb-dead" class="achieve-val">--</span><span id="ratio-dead" class="ratio-tag">--</span><span class="achieve-label">Deadlift</span></div>
-            <div class="achieve-card"><span id="pb-incline" class="achieve-val">--</span><span id="ratio-incline" class="ratio-tag">--</span><span class="achieve-label">Incline</span></div>
-            <div class="achieve-card"><span id="pb-squat" class="achieve-val">--</span><span id="ratio-squat" class="ratio-tag">--</span><span class="achieve-label">Squat</span></div>
+            <div class="achieve-card">
+                <span id="pb-0" class="achieve-val">--</span>
+                <span id="ratio-0" class="ratio-tag">--</span>
+                <select id="select-0" class="achieve-select" onchange="updateEliteSlot(0, this.value)"></select>
+            </div>
+            <div class="achieve-card">
+                <span id="pb-1" class="achieve-val">--</span>
+                <span id="ratio-1" class="ratio-tag">--</span>
+                <select id="select-1" class="achieve-select" onchange="updateEliteSlot(1, this.value)"></select>
+            </div>
+            <div class="achieve-card">
+                <span id="pb-2" class="achieve-val">--</span>
+                <span id="ratio-2" class="ratio-tag">--</span>
+                <select id="select-2" class="achieve-select" onchange="updateEliteSlot(2, this.value)"></select>
+            </div>
+            <div class="achieve-card">
+                <span id="pb-3" class="achieve-val">--</span>
+                <span id="ratio-3" class="ratio-tag">--</span>
+                <select id="select-3" class="achieve-select" onchange="updateEliteSlot(3, this.value)"></select>
+            </div>
         </div>
 
         <div class="achieve-card" style="width:100%; display:grid; grid-template-columns:repeat(2, 1fr); gap: 5px;">
@@ -153,6 +178,7 @@
     let USER_ID = localStorage.getItem('gym_user_email');
     let fullHistoryData = [];
     let userExercises = [];
+    let eliteChoices = JSON.parse(localStorage.getItem('elite_choices')) || ["Bench Press", "Deadlift", "Incline Bench Press", "Back Squat"];
 
     document.getElementById('date-picker').addEventListener('change', updateUI);
 
@@ -160,6 +186,16 @@
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'block';
         init();
+    }
+
+    async function init() {
+        document.getElementById('date-picker').value = new Date().toLocaleDateString('en-CA');
+        updateUI();
+        const res = await fetch(`${url}?userId=${USER_ID}`);
+        const data = await res.json();
+        fullHistoryData = data.history || [];
+        userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
+        calculateWeightAvg();
     }
 
     function toggleAuthMode() {
@@ -193,16 +229,6 @@
             localStorage.removeItem('gym_user_email');
             location.reload();
         }
-    }
-
-    async function init() {
-        document.getElementById('date-picker').value = new Date().toLocaleDateString('en-CA');
-        updateUI();
-        const res = await fetch(`${url}?userId=${USER_ID}`);
-        const data = await res.json();
-        fullHistoryData = data.history || [];
-        userExercises = [...new Set(fullHistoryData.map(h => h.exercise).filter(e => e && !e.includes("CARDIO:"))) ];
-        calculateWeightAvg();
     }
 
     function handleExerciseInput(input) {
@@ -245,21 +271,15 @@
         const cont = btn.previousElementSibling;
         const sets = cont.querySelectorAll('.set-row');
         let lastWeight = "", lastReps = "";
-        
         if (sets.length > 0) {
             const lastSet = sets[sets.length - 1];
             const inputs = lastSet.querySelectorAll('input');
             lastWeight = inputs[0].value;
             lastReps = inputs[1].value;
         }
-
         const row = document.createElement('div');
         row.className = 'set-row';
-        row.innerHTML = `
-            <div style="opacity:0.3">${sets.length+1}</div>
-            <input type="number" placeholder="Lbs" value="${lastWeight}">
-            <input type="number" placeholder="Reps" value="${lastReps}">
-            <div onclick="this.parentElement.remove()">✕</div>`;
+        row.innerHTML = `<div style="opacity:0.3">${sets.length+1}</div><input type="number" placeholder="Lbs" value="${lastWeight}"><input type="number" placeholder="Reps" value="${lastReps}"><div onclick="this.parentElement.remove()">✕</div>`;
         cont.appendChild(row);
     }
 
@@ -269,10 +289,7 @@
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
             <input type="text" class="c-type" placeholder="Cardio Type (Run, Row, etc)" style="color:var(--cardio); font-weight:bold;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-                <input type="text" class="c-dur" placeholder="Duration (min)">
-                <input type="number" class="c-dist" placeholder="Distance (mi)">
-                <input type="number" class="c-hr" placeholder="Avg Heart Rate">
-                <input type="number" class="c-cal" placeholder="Calories">
+                <input type="text" class="c-dur" placeholder="Duration (min)"><input type="number" class="c-dist" placeholder="Distance (mi)"><input type="number" class="c-hr" placeholder="Avg Heart Rate"><input type="number" class="c-cal" placeholder="Calories">
             </div>
             <textarea class="c-notes" placeholder="Notes" style="margin-top:10px; height:60px;"></textarea>`;
         document.getElementById('exercise-list').appendChild(div);
@@ -284,7 +301,6 @@
         const data = [];
         const date = document.getElementById('date-picker').value;
         const bw = document.getElementById('body-weight').value;
-
         document.querySelectorAll('.card:not(.cardio)').forEach(card => {
             const name = card.querySelector('.ex-name').value;
             card.querySelectorAll('.set-row').forEach((row, i) => {
@@ -292,41 +308,13 @@
                 const weight = parseFloat(ins[0].value) || 0;
                 const reps = parseFloat(ins[1].value) || 0;
                 if(weight > 0) {
-                    data.push({
-                        date: date, 
-                        exercise: name, 
-                        set: i+1, 
-                        weight: weight, 
-                        reps: reps, 
-                        duration: "", 
-                        distance: "",
-                        heartRate: "",
-                        calories: "",
-                        notes: "",
-                        bodyWeight: bw,
-                        volume: weight * reps
-                    });
+                    data.push({ date: date, exercise: name, set: i+1, weight: weight, reps: reps, duration: "", distance: "", heartRate: "", calories: "", notes: "", bodyWeight: bw, volume: weight * reps });
                 }
             });
         });
-
         document.querySelectorAll('.cardio').forEach(card => {
-            data.push({
-                date: date, 
-                exercise: "CARDIO: " + card.querySelector('.c-type').value, 
-                set: "", 
-                weight: "", 
-                reps: "", 
-                duration: card.querySelector('.c-dur').value,
-                distance: card.querySelector('.c-dist').value, 
-                heartRate: card.querySelector('.c-hr').value,
-                calories: card.querySelector('.c-cal').value, 
-                notes: card.querySelector('.c-notes').value,
-                bodyWeight: bw,
-                volume: "" 
-            });
+            data.push({ date: date, exercise: "CARDIO: " + card.querySelector('.c-type').value, set: "", weight: "", reps: "", duration: card.querySelector('.c-dur').value, distance: card.querySelector('.c-dist').value, heartRate: card.querySelector('.c-hr').value, calories: card.querySelector('.c-cal').value, notes: card.querySelector('.c-notes').value, bodyWeight: bw, volume: "" });
         });
-
         await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data: data})});
         btn.innerText = "SAVED!";
         setTimeout(() => { btn.innerText = "SAVE ALL"; init(); }, 1500);
@@ -335,21 +323,12 @@
     function toggleAchieve() {
         closePanels();
         document.getElementById('achieve-panel').classList.add('open');
+        renderEliteGrid();
+        
         let miles = 0, vol = 0, cals = 0, sessions = 0, dates = new Set();
-        let maxes = { bench: 0, dead: 0, incline: 0, squat: 0 };
-        const bw = parseFloat(document.getElementById('body-weight').value) || 180;
-
         fullHistoryData.forEach(h => {
             if(h.date) dates.add(h.date.split('T')[0]);
-            if(h.weight && h.reps) {
-                let epley = parseFloat(h.weight) * (1 + parseFloat(h.reps) / 30);
-                vol += (parseFloat(h.weight) * parseFloat(h.reps));
-                let ex = h.exercise.toLowerCase();
-                if(ex.includes("bench")) maxes.bench = Math.max(maxes.bench, epley);
-                if(ex.includes("deadlift")) maxes.dead = Math.max(maxes.dead, epley);
-                if(ex.includes("incline")) maxes.incline = Math.max(maxes.incline, epley);
-                if(ex.includes("squat")) maxes.squat = Math.max(maxes.squat, epley);
-            }
+            if(h.weight && h.reps) vol += (parseFloat(h.weight) * parseFloat(h.reps));
             if(h.exercise && h.exercise.includes("CARDIO")) { sessions++; cals += parseFloat(h.calories || 0); miles += parseFloat(h.distance || 0); }
         });
 
@@ -359,22 +338,12 @@
         document.getElementById('cardio-count').innerText = sessions;
         document.getElementById('year-cals').innerText = Math.round(cals);
 
-        const updateMax = (id, ratioId, val) => {
-            document.getElementById(id).innerText = val > 0 ? Math.round(val) : "--";
-            document.getElementById(ratioId).innerText = val > 0 ? (val/bw).toFixed(2) + "x BW" : "--";
-        };
-        updateMax('pb-bench', 'ratio-bench', maxes.bench);
-        updateMax('pb-dead', 'ratio-dead', maxes.dead);
-        updateMax('pb-incline', 'ratio-incline', maxes.incline);
-        updateMax('pb-squat', 'ratio-squat', maxes.squat);
-
         const hm = document.getElementById('heatmap'); hm.innerHTML = "";
         let today = new Date();
         let currentSunday = new Date(today);
         currentSunday.setDate(today.getDate() - today.getDay());
         let startDate = new Date(currentSunday);
         startDate.setDate(currentSunday.getDate() - 28); 
-
         for(let i=0; i<35; i++) {
             let d = new Date(startDate);
             d.setDate(startDate.getDate() + i);
@@ -382,6 +351,35 @@
             let act = [...dates].some(s => s.startsWith(dateStr));
             hm.innerHTML += `<div class="heat-cell ${act?'heat-active':''}">${d.getDate()}</div>`;
         }
+    }
+
+    function renderEliteGrid() {
+        const bw = parseFloat(document.getElementById('body-weight').value) || 180;
+        
+        eliteChoices.forEach((choice, index) => {
+            const select = document.getElementById(`select-${index}`);
+            // Populate select with unique history exercises + current choice
+            const options = [...new Set([...userExercises, choice])].sort();
+            select.innerHTML = options.map(opt => `<option value="${opt}" ${opt === choice ? 'selected' : ''}>${opt}</option>`).join('');
+            
+            // Calculate 1RM for this specific exercise
+            let max1RM = 0;
+            fullHistoryData.filter(h => h.exercise === choice).forEach(h => {
+                if(h.weight && h.reps) {
+                    let epley = parseFloat(h.weight) * (1 + parseFloat(h.reps) / 30);
+                    max1RM = Math.max(max1RM, epley);
+                }
+            });
+
+            document.getElementById(`pb-${index}`).innerText = max1RM > 0 ? Math.round(max1RM) : "--";
+            document.getElementById(`ratio-${index}`).innerText = max1RM > 0 ? (max1RM/bw).toFixed(2) + "x BW" : "--";
+        });
+    }
+
+    function updateEliteSlot(index, value) {
+        eliteChoices[index] = value;
+        localStorage.setItem('elite_choices', JSON.stringify(eliteChoices));
+        renderEliteGrid();
     }
 
     function calculateMissing() {
@@ -416,15 +414,9 @@
             let setHtml = `<div class="hist-title"><span>${exName}</span></div>`;
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
-                    setHtml += `<div class="hist-set">
-                        <div class="hist-set-data">${s.duration ? s.duration+'m | ' : ''}${s.distance || 0}mi | ${s.calories || 0}cal</div>
-                        ${s.notes ? '<div style="font-size:0.7rem; opacity:0.6; margin-top:2px;">'+s.notes+'</div>' : ''}
-                    </div>`;
+                    setHtml += `<div class="hist-set"><div class="hist-set-data">${s.duration ? s.duration+'m | ' : ''}${s.distance || 0}mi | ${s.calories || 0}cal</div>${s.notes ? '<div style="font-size:0.7rem; opacity:0.6; margin-top:2px;">'+s.notes+'</div>' : ''}</div>`;
                 } else {
-                    setHtml += `<div class="hist-set">
-                        <div class="hist-set-num">Set ${i+1}</div>
-                        <div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div>
-                    </div>`;
+                    setHtml += `<div class="hist-set"><div class="hist-set-num">Set ${i+1}</div><div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div></div>`;
                 }
             });
             item.innerHTML = setHtml;
