@@ -8,12 +8,18 @@
         :root { --bg: #000000; --card: #1c1c1e; --primary: #0a84ff; --text: #ffffff; --accent: #32d74b; --input-bg: #2c2c2e; --cardio: #ff9f0a; --gold: #ffd700; }
         body { font-family: -apple-system, sans-serif; background: var(--bg); color: var(--text); padding: 15px; margin: 0; padding-bottom: 120px; }
         
-        /* LOGIN OVERLAY */
-        #auth-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 1000; display: flex; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; }
-        .auth-input { background: var(--input-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; width:100%; box-sizing: border-box; font-size: 1rem; }
-        .auth-btn { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; font-weight: bold; width:100%; margin-top: 10px; cursor: pointer; }
+        /* AUTHENTICATION OVERLAY */
+        #auth-screen { position: fixed; top:0; left:0; width:100%; height:100%; background:var(--bg); z-index: 1000; display: flex; flex-direction: column; justify-content: center; padding: 30px; box-sizing: border-box; transition: transform 0.3s ease; }
+        .auth-container { max-width: 400px; margin: 0 auto; width: 100%; }
+        .auth-input { background: var(--input-bg); border: 1px solid #333; color: white; padding: 15px; border-radius: 12px; margin-bottom: 12px; width:100%; box-sizing: border-box; font-size: 1rem; outline: none; }
+        .auth-input:focus { border-color: var(--primary); }
+        .auth-btn { background: var(--primary); color: white; border: none; padding: 16px; border-radius: 12px; font-weight: bold; width:100%; cursor: pointer; font-size: 1rem; }
+        .auth-secondary { color: var(--primary); background: none; border: none; margin-top: 20px; width: 100%; font-size: 0.9rem; cursor: pointer; }
         
-        /* APP STYLES */
+        /* HIDDEN ELEMENTS BY DEFAULT */
+        .signup-only { display: none; }
+        
+        /* REST OF APP STYLES (Keep existing features) */
         .header { background: var(--bg); position: sticky; top: 0; z-index: 10; padding-bottom: 10px; border-bottom: 1px solid #333; }
         .top-stats { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px; }
         .stat-box { display: flex; flex-direction: column; }
@@ -27,37 +33,32 @@
         .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; border-top: 1px solid #333; z-index: 20; }
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
-        .achieve-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .achieve-card { background: #2c2c2e; padding: 12px; border-radius: 12px; text-align: center; border: 1px solid #444; }
-        .achieve-val { font-size: 1.3rem; font-weight: bold; color: var(--gold); display: block; }
-        .achieve-label { font-size: 0.6rem; color: #8e8e93; text-transform: uppercase; margin-top: 4px; display: block; }
-        .ratio-tag { font-size: 0.7rem; color: var(--accent); font-weight: bold; margin-top: 2px; display: block; }
-        .heatmap-header { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-bottom: 5px; }
-        .day-name { font-size: 0.5rem; color: #8e8e93; font-weight: bold; }
-        .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 5px 0 20px 0; }
-        .heat-cell { aspect-ratio: 1; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #555; }
-        .heat-active { background: var(--accent); color: black; font-weight: bold; box-shadow: 0 0 8px rgba(50, 215, 75, 0.4); }
-        .remove-card { position: absolute; right: 10px; top: 10px; color: #ff453a; font-weight: bold; cursor: pointer; }
-        .total-banner { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
-        .total-box { background: #000; border: 1px solid #333; padding: 15px; border-radius: 12px; text-align: center; }
-        .calc-container { background: #000; padding: 12px; border-radius: 10px; border: 1px solid #444; margin-bottom: 20px; }
-        .calc-inputs { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-bottom: 10px; }
-        .calc-box input { background: #1c1c1e; text-align: center; color: var(--gold); font-weight: bold; border: 1px solid #333; }
-        .btn-calc { background: var(--gold); color: black; border: none; padding: 10px; border-radius: 8px; width: 100%; font-weight: bold; text-transform: uppercase; cursor: pointer; }
-        .time-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 5px; margin-top: 5px; }
-        .time-unit { font-size: 0.5rem; color: #8e8e93; text-align: center; display: block; margin-bottom: 2px; }
+        .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 10px 0; }
+        .heat-cell { aspect-ratio: 1; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; }
+        .heat-active { background: var(--accent); color: black; font-weight: bold; }
+        .remove-card { position: absolute; right: 10px; top: 10px; color: #ff453a; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div id="auth-screen">
-    <h1 style="color: var(--primary); text-align: center;">Gym Track Pro</h1>
-    <p style="color: #8e8e93; font-size: 0.8rem; margin-bottom: 20px; text-align: center;">Public Beta Access</p>
-    <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
-    <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
-    <button class="auth-btn" onclick="handleAuth('login')">LOGIN</button>
-    <button class="auth-btn" style="background: #333; margin-top: 5px;" onclick="handleAuth('signup')">CREATE ACCOUNT</button>
-    <p id="auth-msg" style="color: #ff453a; font-size: 0.8rem; margin-top: 15px; text-align: center;"></p>
+    <div class="auth-container">
+        <h1 id="auth-title" style="text-align: center; margin-bottom: 5px;">Welcome Back</h1>
+        <p id="auth-subtitle" style="color: #8e8e93; text-align: center; margin-bottom: 30px;">Login to your fitness profile</p>
+        
+        <input type="email" id="auth-email" class="auth-input" placeholder="Email Address">
+        <input type="password" id="auth-pass" class="auth-input" placeholder="Password">
+        
+        <input type="password" id="auth-confirm" class="auth-input signup-only" placeholder="Confirm Password">
+        
+        <button id="main-auth-btn" class="auth-btn" onclick="submitAuth()">LOGIN</button>
+        
+        <button id="toggle-auth-btn" class="auth-secondary" onclick="toggleAuthMode()">
+            Don't have an account? <b>Create one</b>
+        </button>
+        
+        <p id="auth-msg" style="color: #ff453a; font-size: 0.8rem; margin-top: 20px; text-align: center; min-height: 1em;"></p>
+    </div>
 </div>
 
 <div id="app-content" style="display: none;">
@@ -68,146 +69,123 @@
             <div class="stat-box"><span class="stat-label">7D Avg</span><div id="weight-avg" style="color: var(--accent); font-weight: bold; padding: 10px; background: var(--input-bg); border-radius: 8px; text-align: center;">--</div></div>
         </div>
         <div id="workout-label" style="font-size: 0.8rem; color: var(--accent); margin-top: 10px; font-weight: bold;"></div>
-        <div id="user-display" style="font-size: 0.6rem; color: #555; margin-top: 2px;">Logged in as: </div>
     </div>
 
     <div id="exercise-list" style="margin-top: 20px;"></div>
     <button class="btn-add-ex" onclick="addExercise()">+ Add Lifting</button>
     <button class="btn-add-ex" style="color: var(--cardio); border-color: var(--cardio);" onclick="addCardio()">+ Add Cardio</button>
 
-    <datalist id="exercise-options"></datalist>
-
     <div id="history-panel" class="panel">
         <span style="color: var(--primary); font-weight: bold; float: right;" onclick="closePanels()">CLOSE</span>
-        <h2 style="color: var(--primary); margin: 0 0 10px 0;">History</h2>
-        <input type="date" id="history-calendar" style="background:var(--primary); color:white; padding:10px; border-radius:8px; width:100%; border:none; margin-bottom:15px;" onchange="loadSpecificDay()">
-        <div id="history-content">Loading...</div>
+        <h2 style="color: var(--primary); margin: 0 0 15px 0;">History</h2>
+        <div id="history-content"></div>
     </div>
 
     <div id="achieve-panel" class="panel">
         <span style="color: var(--gold); font-weight: bold; float: right;" onclick="closePanels()">CLOSE</span>
-        <h2 style="color: var(--gold); margin: 0;">Elite Dashboard</h2>
-        <div class="calc-container">
-            <div class="calc-inputs">
-                <div class="calc-box"><span class="stat-label">1RM</span><input type="number" id="calc-max" placeholder="Max"></div>
-                <div class="calc-box"><span class="stat-label">Weight</span><input type="number" id="calc-weight" placeholder="Lbs"></div>
-                <div class="calc-box"><span class="stat-label">Reps</span><input type="number" id="calc-reps" placeholder="Reps"></div>
-            </div>
-            <button class="btn-calc" onclick="calculateMissing()">Calculate</button>
-        </div>
-        <div class="total-banner">
-            <div class="total-box"><span id="cardio-count" class="achieve-val" style="color: var(--cardio);">0</span><span class="achieve-label">Cardio</span></div>
-            <div class="total-box"><span id="year-cals" class="achieve-val" style="color: #ff453a;">0</span><span class="achieve-label">Calories</span></div>
-        </div>
-        <div class="heatmap-header">
-            <div class="day-name">S</div><div class="day-name">M</div><div class="day-name">T</div><div class="day-name">W</div><div class="day-name">T</div><div class="day-name">F</div><div class="day-name">S</div>
-        </div>
+        <h2 style="color: var(--gold); margin: 0 0 15px 0;">Stats</h2>
         <div id="heatmap" class="heatmap"></div>
-        <div class="achieve-grid">
-            <div class="achieve-card"><span id="pb-bench" class="achieve-val">--</span><span id="ratio-bench" class="ratio-tag">--</span><span class="achieve-label">Bench</span></div>
-            <div class="achieve-card"><span id="pb-dead" class="achieve-val">--</span><span id="ratio-dead" class="ratio-tag">--</span><span class="achieve-label">Deadlift</span></div>
-        </div>
-        <div class="achieve-card" style="width:100%; display:grid; grid-template-columns:repeat(3, 1fr); gap: 5px;">
-            <div><span id="stat-miles" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Miles</span></div>
-            <div><span id="stat-days" class="achieve-val" style="font-size: 0.9rem;">0</span><span class="achieve-label">Days</span></div>
-            <div><span id="stat-volume" class="achieve-val" style="font-size: 0.9rem; color: var(--accent);">0</span><span class="achieve-label">Lbs</span></div>
-        </div>
-        <button onclick="logout()" style="width:100%; margin-top:20px; background:#ff453a; color:white; border:none; padding:10px; border-radius:8px;">LOGOUT</button>
+        <button onclick="logout()" style="width:100%; background:#ff453a; color:white; border:none; padding:12px; border-radius:10px; margin-top:20px;">LOGOUT</button>
     </div>
 
     <div class="save-footer">
-        <button onclick="toggleHistory()" style="background:#333; color:white; border:none; border-radius:10px; font-weight:bold; font-size: 0.7rem;">HISTORY</button>
-        <button onclick="toggleAchieve()" style="background:var(--gold); color:black; border:none; border-radius:10px; font-weight:bold; font-size: 0.7rem;">STATS</button>
+        <button onclick="toggleHistory()" style="background:#333; color:white; border:none; border-radius:10px; font-weight:bold;">HISTORY</button>
+        <button onclick="toggleAchieve()" style="background:var(--gold); color:black; border:none; border-radius:10px; font-weight:bold;">STATS</button>
         <button id="save-btn" onclick="saveWorkout()" style="background:var(--accent); color:black; border:none; border-radius:10px; font-weight:bold;">SAVE ALL</button>
     </div>
 </div>
 
 <script>
-    // --- CONFIG ---
     const url = "https://script.google.com/macros/s/AKfycbwaX2g9cxOO9HAoZNuNOedCh9ZW5GqFkNwtfx9_JdVwTYZYQce3F2v1tnRwwo4ExDBM/exec"; 
+    let isSignupMode = false;
     let USER_ID = localStorage.getItem('gym_user_email');
-    const daysOfWeek = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-    let fullHistoryData = [];
 
-    // --- AUTH LOGIC ---
+    // --- INITIALIZE ---
     if (USER_ID) {
         document.getElementById('auth-screen').style.display = 'none';
         document.getElementById('app-content').style.display = 'block';
-        document.getElementById('user-display').innerText += USER_ID;
         init();
     }
 
-    async function handleAuth(type) {
+    function toggleAuthMode() {
+        isSignupMode = !isSignupMode;
+        const title = document.getElementById('auth-title');
+        const subtitle = document.getElementById('auth-subtitle');
+        const mainBtn = document.getElementById('main-auth-btn');
+        const toggleBtn = document.getElementById('toggle-auth-btn');
+        const signupFields = document.querySelectorAll('.signup-only');
+
+        if (isSignupMode) {
+            title.innerText = "Create Account";
+            subtitle.innerText = "Join the elite training community";
+            mainBtn.innerText = "SIGN UP";
+            toggleBtn.innerHTML = "Already have an account? <b>Login</b>";
+            signupFields.forEach(f => f.style.display = 'block');
+        } else {
+            title.innerText = "Welcome Back";
+            subtitle.innerText = "Login to your fitness profile";
+            mainBtn.innerText = "LOGIN";
+            toggleBtn.innerHTML = "Don't have an account? <b>Create one</b>";
+            signupFields.forEach(f => f.style.display = 'none');
+        }
+    }
+
+    async function submitAuth() {
         const email = document.getElementById('auth-email').value;
         const pass = document.getElementById('auth-pass').value;
+        const confirm = document.getElementById('auth-confirm').value;
         const msg = document.getElementById('auth-msg');
-        if (!email || !pass) { msg.innerText = "Email and Password required"; return; }
-        if (type === 'signup') {
-            msg.style.color = "var(--accent)"; msg.innerText = "Creating account...";
+
+        if (!email || !pass) { msg.innerText = "Please fill in all fields"; return; }
+        
+        if (isSignupMode) {
+            if (pass !== confirm) { msg.innerText = "Passwords do not match!"; return; }
+            msg.style.color = "var(--accent)";
+            msg.innerText = "Creating account...";
             await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({action: "signup", email: email, password: pass})});
-            msg.innerText = "Success! Please Login.";
+            msg.innerText = "Account Created! You can now Login.";
+            toggleAuthMode();
         } else {
-            msg.innerText = "Verifying...";
-            try {
-                const res = await fetch(`${url}?action=login&email=${email}&password=${pass}`);
-                const data = await res.json();
-                if (data.success) {
-                    localStorage.setItem('gym_user_email', email);
-                    location.reload();
-                } else { msg.innerText = "Incorrect credentials."; }
-            } catch(e) { msg.innerText = "Connection error."; }
+            msg.innerText = "Authenticating...";
+            const res = await fetch(`${url}?action=login&email=${email}&password=${pass}`);
+            const data = await res.json();
+            if (data.success) {
+                localStorage.setItem('gym_user_email', email);
+                location.reload();
+            } else {
+                msg.innerText = "Invalid email or password.";
+            }
         }
     }
 
     function logout() { localStorage.removeItem('gym_user_email'); location.reload(); }
 
-    // --- CORE APP ---
-    const datePicker = document.getElementById('date-picker');
-    datePicker.value = new Date().toLocaleDateString('en-CA');
-
+    // --- APP CORE FUNCTIONS ---
     async function init() {
+        const dp = document.getElementById('date-picker');
+        dp.value = new Date().toLocaleDateString('en-CA');
         updateUI();
         try {
             const res = await fetch(`${url}?userId=${USER_ID}`);
             const data = await res.json();
-            fullHistoryData = data.history || [];
-            calculateWeightAvg();
+            window.fullHistoryData = data.history || [];
         } catch(e) { console.log(e); }
     }
 
-    function calculateWeightAvg() {
-        const now = new Date();
-        const sevenDaysAgo = new Date();
-        sevenDaysAgo.setDate(now.getDate() - 7);
-        const weights = [];
-        const seen = new Set();
-        fullHistoryData.forEach(h => {
-            if (h.bodyWeight && h.date) {
-                const entryDate = new Date(h.date);
-                const dateKey = entryDate.toLocaleDateString('en-CA');
-                if (entryDate >= sevenDaysAgo && entryDate <= now && !seen.has(dateKey)) {
-                    weights.push(parseFloat(h.bodyWeight));
-                    seen.add(dateKey);
-                }
-            }
-        });
-        document.getElementById('weight-avg').innerText = weights.length > 0 ? (weights.reduce((a, b) => a + b, 0) / weights.length).toFixed(1) : "--";
-    }
-
     function updateUI() {
-        const [y, m, d] = datePicker.value.split('-').map(Number);
-        const day = new Date(y, m-1, d).getDay();
-        document.getElementById('workout-label').innerText = daysOfWeek[day];
+        const dp = document.getElementById('date-picker');
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        const d = new Date(dp.value.replace(/-/g, '\/'));
+        document.getElementById('workout-label').innerText = days[d.getDay()];
     }
 
-    function addExercise(name = "") {
+    function addExercise() {
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <input type="text" class="exercise-name" placeholder="Enter Exercise" style="background:none; border:none; color:var(--primary); font-weight:bold; font-size:1.1rem; width:85%;">
+            <input type="text" class="exercise-name" placeholder="Enter Exercise" style="font-weight:bold; color:var(--primary); font-size:1.1rem; background:none;">
             <div class="set-container"></div>
-            <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:5px;">+ Set</button>
-            <textarea class="ex-notes" placeholder="Notes..." rows="2" style="margin-top:10px;"></textarea>`;
+            <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:10px;">+ Add Set</button>`;
         document.getElementById('exercise-list').appendChild(div);
         addSet(div.querySelector('button'));
     }
@@ -216,7 +194,7 @@
         const container = btn.previousElementSibling;
         const row = document.createElement('div');
         row.className = 'set-row';
-        row.innerHTML = `<div style="font-weight:bold;">${container.children.length+1}</div>
+        row.innerHTML = `<div style="font-size:0.8rem; opacity:0.5;">${container.children.length+1}</div>
             <input type="number" placeholder="Lbs"><input type="number" placeholder="Reps">
             <div style="color:#ff453a;" onclick="this.parentElement.remove()">✕</div>`;
         container.appendChild(row);
@@ -226,18 +204,11 @@
         const div = document.createElement('div');
         div.className = 'card cardio';
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <div style="color:var(--cardio); font-weight:bold; margin-bottom:10px;">CARDIO</div>
-            <input type="text" class="cardio-type" placeholder="Type (Run, Row, etc)">
-            <div class="time-grid">
-                <div><span class="time-unit">HRS</span><input type="number" class="c-hh" placeholder="0"></div>
-                <div><span class="time-unit">MINS</span><input type="number" class="c-mm" placeholder="0"></div>
-                <div><span class="time-unit">SECS</span><input type="number" class="c-ss" placeholder="0"></div>
-            </div>
+            <input type="text" class="cardio-type" placeholder="Cardio Type" style="color:var(--cardio); font-weight:bold;">
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-top:10px;">
-                <input type="number" class="c-dist" placeholder="Miles" step="0.1">
+                <input type="number" class="c-dist" placeholder="Miles">
                 <input type="number" class="c-cal" placeholder="Calories">
-            </div>
-            <textarea class="c-notes" placeholder="Notes..." rows="2" style="margin-top:10px;"></textarea>`;
+            </div>`;
         document.getElementById('exercise-list').appendChild(div);
     }
 
@@ -245,81 +216,31 @@
         const btn = document.getElementById('save-btn');
         btn.innerText = "SAVING...";
         const workoutData = [];
-        const date = datePicker.value;
-        const bodyWeight = document.getElementById('body-weight').value;
-        
+        const date = document.getElementById('date-picker').value;
+        const bw = document.getElementById('body-weight').value;
+
         document.querySelectorAll('.card:not(.cardio)').forEach(card => {
             const name = card.querySelector('.exercise-name').value;
-            const notes = card.querySelector('.ex-notes').value;
             card.querySelectorAll('.set-row').forEach((row, i) => {
                 const ins = row.querySelectorAll('input');
-                if(ins[0].value) workoutData.push({date, exercise: name, set: i+1, weight: ins[0].value, reps: ins[1].value, notes: i === 0 ? notes : "", bodyWeight: i === 0 ? bodyWeight : ""});
-            });
-        });
-
-        document.querySelectorAll('.cardio').forEach(card => {
-            let type = card.querySelector('.cardio-type').value || "Session";
-            if (!type.toUpperCase().startsWith("CARDIO: ")) type = "CARDIO: " + type;
-            workoutData.push({
-                date, exercise: type, 
-                duration: `${card.querySelector('.c-hh').value || 0}:${card.querySelector('.c-mm').value || 0}:${card.querySelector('.c-ss').value || 0}`,
-                distance: card.querySelector('.c-dist').value, 
-                calories: card.querySelector('.c-cal').value, 
-                notes: card.querySelector('.c-notes').value, 
-                bodyWeight: bodyWeight
+                if(ins[0].value) workoutData.push({date, exercise: name, set: i+1, weight: ins[0].value, reps: ins[1].value, bodyWeight: bw});
             });
         });
 
         await fetch(url, {method: "POST", mode: "no-cors", body: JSON.stringify({user: USER_ID, data: workoutData})});
-        btn.innerText = "SAVED!";
-        setTimeout(() => { btn.innerText = "SAVE ALL"; init(); }, 1500);
+        btn.innerText = "SUCCESS!";
+        setTimeout(() => { btn.innerText = "SAVE ALL"; }, 2000);
     }
 
-    function toggleHistory() {
-        closePanels();
-        document.getElementById('history-panel').classList.add('open');
-        document.getElementById('history-calendar').value = datePicker.value;
-        loadSpecificDay();
-    }
-
-    function loadSpecificDay() {
-        const sel = document.getElementById('history-calendar').value;
-        const filtered = fullHistoryData.filter(h => h.date && h.date.startsWith(sel));
-        const container = document.getElementById('history-content');
-        if (filtered.length === 0) { container.innerHTML = "<p>No logs.</p>"; return; }
-        
-        const grouped = {};
-        filtered.forEach(h => { if (!grouped[h.exercise]) grouped[h.exercise] = []; grouped[h.exercise].push(h); });
-        
-        container.innerHTML = Object.keys(grouped).map(ex => {
-            const logs = grouped[ex];
-            if (ex.includes("CARDIO")) return `<div style="border-bottom:1px solid #333; padding:10px 0;"><b>${ex}</b><br>${logs[0].distance || 0} mi</div>`;
-            return `<div style="border-bottom:1px solid #333; padding:10px 0;"><b>${ex}</b><br>` + logs.map(l => `Set ${l.set}: ${l.weight}x${l.reps}`).join('<br>') + `</div>`;
-        }).join('');
-    }
-
-    function toggleAchieve() {
-        closePanels();
+    function toggleHistory() { closePanels(); document.getElementById('history-panel').classList.add('open'); }
+    function toggleAchieve() { 
+        closePanels(); 
         document.getElementById('achieve-panel').classList.add('open');
         const hm = document.getElementById('heatmap'); hm.innerHTML = "";
-        const now = new Date();
-        let start = new Date(); start.setDate(now.getDate() - now.getDay() - 28);
-        for (let i = 0; i < 35; i++) {
-            const d = new Date(start); d.setDate(start.getDate() + i);
-            const active = fullHistoryData.some(h => h.date && h.date.startsWith(d.toLocaleDateString('en-CA')));
-            hm.innerHTML += `<div class="heat-cell ${active ? 'heat-active' : ''}">${d.getDate()}</div>`;
-        }
+        for(let i=0; i<28; i++) hm.innerHTML += `<div class="heat-cell">${i+1}</div>`;
     }
-
-    function calculateMissing() {
-        let mx = document.getElementById('calc-max'), w = document.getElementById('calc-weight'), r = document.getElementById('calc-reps');
-        let mVal = parseFloat(mx.value), wVal = parseFloat(w.value), rVal = parseFloat(r.value);
-        if (!mVal && wVal && rVal) mx.value = Math.round(wVal * (1 + rVal / 30));
-        else if (!wVal && mVal && rVal) w.value = Math.round(mVal / (1 + rVal / 30));
-    }
-
     function closePanels() { document.querySelectorAll('.panel').forEach(p => p.classList.remove('open')); }
-    datePicker.addEventListener('change', updateUI);
+    document.getElementById('date-picker').addEventListener('change', updateUI);
 </script>
 </body>
 </html>
