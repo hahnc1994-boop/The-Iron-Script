@@ -47,7 +47,7 @@
         /* HISTORY STYLES */
         .hist-item { background: #000; border: 1px solid #333; border-radius: 10px; padding: 12px; margin-bottom: 12px; }
         .hist-title { color: var(--primary); font-weight: bold; font-size: 0.9rem; margin-bottom: 8px; border-bottom: 1px solid #222; padding-bottom: 4px; display: flex; justify-content: space-between; }
-        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 10px solid #111; }
+        .hist-set { font-size: 0.85rem; display: flex; align-items: center; padding: 4px 0; border-bottom: 1px solid #111; }
         .hist-set-num { width: 50px; opacity: 0.5; }
         .hist-set-data { flex-grow: 1; }
         .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
@@ -60,6 +60,10 @@
         .achieve-val { font-size: 1.3rem; font-weight: bold; color: var(--gold); display: block; }
         .achieve-label { font-size: 0.6rem; color: #8e8e93; text-transform: uppercase; margin-top: 4px; display: block; }
         .ratio-tag { font-size: 0.7rem; color: var(--accent); font-weight: bold; margin-top: 2px; display: block; }
+        
+        /* HEATMAP */
+        .heat-labels { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; margin-bottom: 4px; }
+        .heat-label-cell { font-size: 0.6rem; color: #8e8e93; font-weight: bold; }
         .heatmap { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin: 10px 0; }
         .heat-cell { aspect-ratio: 1; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 0.6rem; color: #555; }
         .heat-active { background: var(--accent); color: black; font-weight: bold; }
@@ -67,6 +71,8 @@
     </style>
 </head>
 <body>
+
+<datalist id="exercise-suggestions"></datalist>
 
 <div id="auth-screen">
     <div class="auth-container">
@@ -117,6 +123,9 @@
             <div class="total-box"><span id="stat-miles" class="achieve-val" style="color: var(--primary);">0</span><span class="achieve-label">Miles</span></div>
         </div>
 
+        <div class="heat-labels">
+            <div class="heat-label-cell">S</div><div class="heat-label-cell">M</div><div class="heat-label-cell">T</div><div class="heat-label-cell">W</div><div class="heat-label-cell">T</div><div class="heat-label-cell">F</div><div class="heat-label-cell">S</div>
+        </div>
         <div class="heatmap" id="heatmap"></div>
 
         <div class="achieve-grid">
@@ -200,6 +209,16 @@
         const data = await res.json();
         fullHistoryData = data.history || [];
         calculateWeightAvg();
+        populateExerciseSuggestions();
+    }
+
+    function populateExerciseSuggestions() {
+        const list = document.getElementById('exercise-suggestions');
+        const uniqueExercises = [...new Set(fullHistoryData
+            .map(h => h.exercise)
+            .filter(e => e && !e.includes("CARDIO:")))
+        ];
+        list.innerHTML = uniqueExercises.map(ex => `<option value="${ex}">`).join('');
     }
 
     function updateUI() {
@@ -220,7 +239,7 @@
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
-            <input type="text" class="ex-name" placeholder="Exercise Name" style="color:var(--primary); font-weight:bold;">
+            <input type="text" class="ex-name" list="exercise-suggestions" placeholder="Exercise Name" style="color:var(--primary); font-weight:bold;">
             <div class="set-cont"></div>
             <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:10px;">+ Set</button>`;
         document.getElementById('exercise-list').appendChild(div);
@@ -340,14 +359,10 @@
         updateMax('pb-incline', 'ratio-incline', maxes.incline);
         updateMax('pb-squat', 'ratio-squat', maxes.squat);
 
-        // Heatmap Logic: 5-week rolling calendar (Sunday-Saturday)
         const hm = document.getElementById('heatmap'); hm.innerHTML = "";
         let today = new Date();
-        // Move to the Sunday of the current week
         let currentSunday = new Date(today);
         currentSunday.setDate(today.getDate() - today.getDay());
-        
-        // Go back 4 more weeks from this Sunday (Total 5 weeks)
         let startDate = new Date(currentSunday);
         startDate.setDate(currentSunday.getDate() - 28); 
 
