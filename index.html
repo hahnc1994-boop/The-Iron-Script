@@ -40,7 +40,7 @@
         .set-row { display: grid; grid-template-columns: 0.5fr 1.5fr 1.5fr 0.5fr; gap: 10px; margin-bottom: 10px; align-items: center; }
         input, textarea, select { background: var(--input-bg); border: none; color: white; padding: 10px; border-radius: 8px; font-size: 0.9rem; width: 100%; box-sizing: border-box; }
         .btn-add-ex { background: #1c1c1e; color: var(--text); border: 2px dashed #444; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; margin-bottom: 10px; }
-        .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 10px; border-top: 1px solid #333; z-index: 20; }
+        .save-footer { position: fixed; bottom: 0; left: 0; right: 0; background: rgba(0,0,0,0.95); padding: 15px; display: grid; grid-template-columns: 1fr 1fr 1fr 2fr; gap: 8px; border-top: 1px solid #333; z-index: 20; }
         .panel { position: fixed; top: 100%; left: 0; width: 100%; height: 90%; background: #1c1c1e; transition: top 0.3s ease; z-index: 100; overflow-y: auto; padding: 20px; box-sizing: border-box; border-radius: 20px 20px 0 0; }
         .panel.open { top: 10%; }
         
@@ -70,6 +70,13 @@
         .hist-set-data { flex-grow: 1; }
         .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
         .delete-log { color: #ff453a; font-size: 0.8rem; cursor: pointer; padding-left: 10px; }
+
+        /* GUIDE STYLES */
+        .guide-section { margin-bottom: 25px; }
+        .guide-h3 { color: var(--primary); border-bottom: 1px solid #333; padding-bottom: 5px; margin-bottom: 10px; font-size: 1rem; text-transform: uppercase; }
+        .guide-list { list-style: none; padding: 0; }
+        .guide-list li { margin-bottom: 10px; font-size: 0.85rem; line-height: 1.4; color: #d1d1d6; }
+        .guide-list li b { color: var(--text); }
     </style>
 </head>
 <body>
@@ -115,6 +122,44 @@
     <div id="exercise-list" style="margin-top: 20px;"></div>
     <button class="btn-add-ex" onclick="addExercise()">+ Add Lifting</button>
     <button class="btn-add-ex" style="color: var(--cardio); border-color: var(--cardio);" onclick="addCardio()">+ Add Cardio</button>
+
+    <div id="guide-panel" class="panel">
+        <span style="color: var(--primary); font-weight: bold; float: right;" onclick="closePanels()">CLOSE</span>
+        <h2 style="color: var(--primary); margin: 0 0 15px 0;">Intelligence Guide</h2>
+        
+        <div class="guide-section">
+            <div class="guide-h3">I. Performance Features</div>
+            <ul class="guide-list">
+                <li><b>Precision Tracking:</b> Comprehensive logging for resistance training, including load, volume, and intensity.</li>
+                <li><b>Integrated Cardio Analytics:</b> Specialized tracking for distance, calories, and heart rate.</li>
+                <li><b>Elite Dashboard:</b> Dynamic stats engine providing real-time personal accolades.</li>
+                <li><b>Predictive Biometrics:</b> Integrated 1RM algorithm and Strength-to-Bodyweight ratios.</li>
+                <li><b>Smart Entry:</b> Predictive text and Auto-Flow sets to streamline sessions.</li>
+                <li><b>Heatmap:</b> Interactive 35-day grid visualizing training consistency.</li>
+            </ul>
+        </div>
+
+        <div class="guide-section">
+            <div class="guide-h3">II. Operational Procedures</div>
+            <ul class="guide-list">
+                <li><b>Profile Integrity:</b> Data is encrypted and tied to your specific email address.</li>
+                <li><b>Logging Lifting:</b> Use "+ Add Lifting", input the first set, and use "+ Set" for auto-populated rounds.</li>
+                <li><b>Logging Cardio:</b> Use "+ Add Cardio" for aerobic sessions. Dashboard priorities are Distance and Calories.</li>
+                <li><b>Finalization:</b> Review all entries and select "SAVE ALL." Avoid double-tapping to prevent duplicate records.</li>
+                <li><b>Correction:</b> Use the History panel to delete individual records or mistakes post-save.</li>
+            </ul>
+        </div>
+
+        <div class="guide-section" style="padding-bottom:40px;">
+            <div class="guide-h3">III. Pro-Tips</div>
+            <ul class="guide-list">
+                <li><b>Account Recovery:</b> Use "Forgot Password" to receive a secure 6-digit reset code via email.</li>
+                <li><b>Cardio Formats:</b> Record duration in decimal format (e.g., 20.5 for 20m 30s).</li>
+                <li><b>1RM Logic:</b> Enter any two metrics in the calculator and leave the third blank before hitting Calculate.</li>
+                <li><b>Custom Slots:</b> Personalize the four trackers at the bottom of the Stats page via the dropdown menus.</li>
+            </ul>
+        </div>
+    </div>
 
     <div id="achieve-panel" class="panel">
         <span style="color: var(--gold); font-weight: bold; float: right;" onclick="closePanels()">CLOSE</span>
@@ -177,9 +222,10 @@
     </div>
 
     <div class="save-footer">
-        <button onclick="toggleHistory()" style="background:#333; color:white; border:none; border-radius:10px; font-weight:bold;">HISTORY</button>
-        <button onclick="toggleAchieve()" style="background:var(--gold); color:black; border:none; border-radius:10px; font-weight:bold;">STATS</button>
-        <button id="save-btn" onclick="saveWorkout()" style="background:var(--accent); color:black; border:none; border-radius:10px; font-weight:bold;">SAVE ALL</button>
+        <button onclick="toggleHistory()" style="background:#333; color:white; border:none; border-radius:10px; font-weight:bold; font-size:0.7rem;">HISTORY</button>
+        <button onclick="toggleAchieve()" style="background:var(--gold); color:black; border:none; border-radius:10px; font-weight:bold; font-size:0.7rem;">STATS</button>
+        <button onclick="toggleGuide()" style="background:var(--primary); color:white; border:none; border-radius:10px; font-weight:bold; font-size:0.7rem;">GUIDE</button>
+        <button id="save-btn" onclick="saveWorkout()" style="background:var(--accent); color:black; border:none; border-radius:10px; font-weight:bold; font-size:0.8rem;">SAVE ALL</button>
     </div>
 </div>
 
@@ -387,6 +433,8 @@
         }
     }
 
+    function toggleGuide() { closePanels(); document.getElementById('guide-panel').classList.add('open'); }
+
     function renderEliteGrid() {
         const bw = parseFloat(document.getElementById('body-weight').value) || 180;
         eliteChoices.forEach((choice, index) => {
@@ -444,7 +492,6 @@
             let setHtml = `<div class="hist-title"><span>${exName}</span></div>`;
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
-                    // REMOVED DURATION STRING TO CLEAN UP MOBILE VIEW
                     setHtml += `<div class="hist-set"><div class="hist-set-data">${s.distance || 0}mi | ${s.calories || 0}cal</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
                 } else {
                     setHtml += `<div class="hist-set"><div class="hist-set-num">Set ${i+1}</div><div class="hist-set-data">${s.weight} lbs x ${s.reps} ${i === prIndex ? '<span class="star-pr">⭐</span>' : ''}</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
