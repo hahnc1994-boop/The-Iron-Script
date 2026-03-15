@@ -459,10 +459,26 @@
         renderEliteGrid();
     }
 
+    /* 1RM CALCULATOR LOGIC */
     function calculateMissing() {
-        let mx = document.getElementById('calc-max'), w = document.getElementById('calc-weight'), r = document.getElementById('calc-reps');
-        if (!mx.value) mx.value = Math.round(w.value * (1 + r.value / 30));
-        else if (!w.value) w.value = Math.round(mx.value / (1 + r.value / 30));
+        let mx = document.getElementById('calc-max'), 
+            w = document.getElementById('calc-weight'), 
+            r = document.getElementById('calc-reps');
+        
+        let valMx = parseFloat(mx.value), valW = parseFloat(w.value), valR = parseFloat(r.value);
+
+        // Case 1: Calculate Max (Weight and Reps entered)
+        if (!mx.value && w.value && r.value) {
+            mx.value = Math.round(valW * (1 + valR / 30));
+        } 
+        // Case 2: Calculate Weight (Max and Reps entered)
+        else if (!w.value && mx.value && r.value) {
+            w.value = Math.round(valMx / (1 + valR / 30));
+        }
+        // Case 3: Calculate Reps (Max and Weight entered)
+        else if (!r.value && mx.value && w.value) {
+            r.value = Math.round(30 * (valMx / valW - 1));
+        }
     }
 
     /* HISTORY VIEWING */
