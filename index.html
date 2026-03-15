@@ -70,6 +70,7 @@
         .hist-set-data { flex-grow: 1; }
         .star-pr { color: var(--gold); font-weight: bold; margin-left: 10px; }
         .delete-log { color: #ff453a; font-size: 0.8rem; cursor: pointer; padding-left: 10px; }
+        .note-indicator { cursor: pointer; margin-left: 8px; font-size: 1rem; }
 
         /* GUIDE STYLES */
         .guide-section { margin-bottom: 25px; }
@@ -337,7 +338,8 @@
         div.innerHTML = `<div class="remove-card" onclick="this.parentElement.remove()">✕</div>
             <input type="text" class="ex-name" placeholder="Exercise Name" oninput="handleExerciseInput(this)" style="color:var(--primary); font-weight:bold;">
             <div class="set-cont"></div>
-            <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:10px;">+ Set</button>`;
+            <button onclick="addSet(this)" style="width:100%; background:#2c2c2e; color:var(--primary); border:none; padding:8px; border-radius:5px; margin-top:10px;">+ Set</button>
+            <textarea class="ex-notes" placeholder="Exercise Notes" style="margin-top:10px; height:45px; font-size:0.8rem;"></textarea>`;
         document.getElementById('exercise-list').appendChild(div);
         addSet(div.querySelector('button'));
     }
@@ -379,12 +381,13 @@
         
         document.querySelectorAll('.card:not(.cardio)').forEach(card => {
             const name = card.querySelector('.ex-name').value;
+            const notes = card.querySelector('.ex-notes').value;
             card.querySelectorAll('.set-row').forEach((row, i) => {
                 const ins = row.querySelectorAll('input');
                 const weight = parseFloat(ins[0].value) || 0;
                 const reps = parseFloat(ins[1].value) || 0;
                 if(weight > 0) {
-                    data.push({ date: date, exercise: name, set: i+1, weight: weight, reps: reps, duration: "", distance: "", heartRate: "", calories: "", notes: "", bodyWeight: bw, volume: weight * reps });
+                    data.push({ date: date, exercise: name, set: i+1, weight: weight, reps: reps, duration: "", distance: "", heartRate: "", calories: "", notes: notes, bodyWeight: bw, volume: weight * reps });
                 }
             });
         });
@@ -416,7 +419,6 @@
         document.getElementById('cardio-count').innerText = sessions;
         document.getElementById('year-cals').innerText = Math.round(cals);
 
-        /* RELIABLE HEATMAP LOGIC */
         const hm = document.getElementById('heatmap'); 
         hm.innerHTML = "";
         const today = new Date();
@@ -459,26 +461,12 @@
         renderEliteGrid();
     }
 
-    /* 1RM CALCULATOR LOGIC */
     function calculateMissing() {
-        let mx = document.getElementById('calc-max'), 
-            w = document.getElementById('calc-weight'), 
-            r = document.getElementById('calc-reps');
-        
+        let mx = document.getElementById('calc-max'), w = document.getElementById('calc-weight'), r = document.getElementById('calc-reps');
         let valMx = parseFloat(mx.value), valW = parseFloat(w.value), valR = parseFloat(r.value);
-
-        // Case 1: Calculate Max (Weight and Reps entered)
-        if (!mx.value && w.value && r.value) {
-            mx.value = Math.round(valW * (1 + valR / 30));
-        } 
-        // Case 2: Calculate Weight (Max and Reps entered)
-        else if (!w.value && mx.value && r.value) {
-            w.value = Math.round(valMx / (1 + valR / 30));
-        }
-        // Case 3: Calculate Reps (Max and Weight entered)
-        else if (!r.value && mx.value && w.value) {
-            r.value = Math.round(30 * (valMx / valW - 1));
-        }
+        if (!mx.value && w.value && r.value) mx.value = Math.round(valW * (1 + valR / 30));
+        else if (!w.value && mx.value && r.value) w.value = Math.round(valMx / (1 + valR / 30));
+        else if (!r.value && mx.value && w.value) r.value = Math.round(30 * (valMx / valW - 1));
     }
 
     /* HISTORY VIEWING */
@@ -497,6 +485,7 @@
         }, {});
         for (const [exName, sets] of Object.entries(grouped)) {
             let max1RM = 0, prIndex = -1;
+            const noteText = sets[0].notes || ""; 
             sets.forEach((s, i) => {
                 if (s.weight && s.reps) {
                     let epley = parseFloat(s.weight) * (1 + parseFloat(s.reps) / 30);
@@ -505,7 +494,8 @@
             });
             const item = document.createElement('div');
             item.className = 'hist-item';
-            let setHtml = `<div class="hist-title"><span>${exName}</span></div>`;
+            let noteBtn = noteText ? `<span class="note-indicator" onclick="alert('Note: ${noteText.replace(/'/g, "\\'")}')">📝</span>` : "";
+            let setHtml = `<div class="hist-title"><span>${exName}${noteBtn}</span></div>`;
             sets.forEach((s, i) => {
                 if (s.exercise.includes("CARDIO")) {
                     setHtml += `<div class="hist-set"><div class="hist-set-data">${s.distance || 0}mi | ${s.calories || 0}cal</div><span class="delete-log" onclick="deleteLog(${s.rowId})">🗑️</span></div>`;
